@@ -64,11 +64,15 @@ export function LogsList({
       </ul>
       {logs.length === 0 ? <p className="text-sm text-muted-foreground">No logs yet.</p> : null}
       <p className="mt-6 text-xs text-muted-foreground">
-        Tip: open the{" "}
+        Add new logs from the{" "}
+        <Link href="/logs/upload" className="text-primary hover:underline">
+          Upload log
+        </Link>{" "}
+        tab. Open the{" "}
         <Link href="/calendar" className="text-primary hover:underline">
           calendar
         </Link>{" "}
-        and pick a day to see logs for that day.
+        to pick a day and see logs for that day.
       </p>
     </div>
   );
