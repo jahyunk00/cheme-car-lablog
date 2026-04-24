@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import { z } from "zod";
 import { hashPassword, sessionCookieName, signSession } from "@/lib/auth";
+import { parseLablogAvatarId } from "@/lib/avatar-ids";
 import { getUserByEmail, insertUser } from "@/lib/db";
 import type { User } from "@/lib/types";
 
@@ -9,6 +10,7 @@ const bodySchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(120),
   email: z.string().email(),
   password: z.string().min(8, "Use at least 8 characters").max(200),
+  avatarId: z.number().int().min(1).max(4).optional(),
 });
 
 export async function POST(request: Request) {
@@ -32,12 +34,14 @@ export async function POST(request: Request) {
     }
 
     const passwordHash = await hashPassword(parsed.data.password);
+    const avatarId = parseLablogAvatarId(parsed.data.avatarId);
     const user: User = {
       id: randomUUID(),
       name: parsed.data.name.trim(),
       email,
       role: "member",
       passwordHash,
+      avatarId,
     };
 
     try {
@@ -57,6 +61,7 @@ export async function POST(request: Request) {
       email: user.email,
       name: user.name,
       role: user.role,
+      avatarId: user.avatarId,
     });
 
     const res = NextResponse.json({ ok: true });

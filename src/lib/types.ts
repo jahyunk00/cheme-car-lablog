@@ -1,3 +1,6 @@
+import type { LablogAvatarId } from "@/lib/avatar-ids";
+import type { LogCategory } from "@/lib/log-categories";
+
 export type UserRole = "admin" | "member";
 
 export type User = {
@@ -6,9 +9,8 @@ export type User = {
   email: string;
   role: UserRole;
   passwordHash: string;
+  avatarId: LablogAvatarId;
 };
-
-import type { LogCategory } from "@/lib/log-categories";
 
 export type LogEntry = {
   id: string;

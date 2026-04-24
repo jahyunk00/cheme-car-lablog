@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { format, parseISO } from "date-fns";
 
+import { UserAvatar } from "@/components/UserAvatar";
 import type { LogCategory } from "@/lib/log-categories";
 
 export type DayLogRow = {
   id: string;
   title: string;
   userName: string;
+  userAvatarId: number;
   description: string;
   tags: string[];
   category: LogCategory;
@@ -77,12 +79,15 @@ export function DaySummaryDialog({
                   className="rounded-lg border border-lab-border bg-lab-bg/50 px-4 py-3 text-left"
                 >
                   <p className="font-medium text-white">{log.title}</p>
-                  <p className="mt-1 text-xs text-slate-500">
+                  <p className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-slate-500">
                     <span className="rounded border border-border bg-muted/50 px-1.5 py-0.5 text-foreground">
                       {log.category}
                     </span>
-                    <span className="mx-1.5">·</span>
-                    {log.userName}
+                    <span className="mx-0.5">·</span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <UserAvatar avatarId={log.userAvatarId} size={18} title={log.userName} />
+                      {log.userName}
+                    </span>
                   </p>
                   {log.tags.length > 0 ? (
                     <p className="text-xs text-blue-300/90 mt-2">{log.tags.join(" · ")}</p>

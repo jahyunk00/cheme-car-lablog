@@ -17,11 +17,13 @@ export default async function LogsPage({ searchParams }: Props) {
 
   const directory = await listDirectoryUsers();
   const nameById = Object.fromEntries(directory.map((u) => [u.id, u.name]));
+  const avatarById = Object.fromEntries(directory.map((u) => [u.id, u.avatarId]));
 
   const allRows: LogRow[] = (await listAllLogs()).map((l) => ({
     id: l.id,
     userId: l.userId,
     userName: nameById[l.userId] ?? l.userId,
+    userAvatarId: avatarById[l.userId] ?? 1,
     date: l.date,
     title: l.title,
     description: l.description,

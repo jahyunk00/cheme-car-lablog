@@ -1,5 +1,7 @@
 import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
+import type { LablogAvatarId } from "./avatar-ids";
+import { DEFAULT_AVATAR_ID, parseLablogAvatarId } from "./avatar-ids";
 import type { UserRole } from "./types";
 
 const COOKIE = "lablog_session";
@@ -25,10 +27,12 @@ export type SessionPayload = {
   email: string;
   name: string;
   role: UserRole;
+  avatarId: LablogAvatarId;
 };
 
 export async function signSession(payload: SessionPayload) {
-  return new SignJWT({ email: payload.email, name: payload.name, role: payload.role })
+  const avatarId = payload.avatarId ?? DEFAULT_AVATAR_ID;
+  return new SignJWT({ email: payload.email, name: payload.name, role: payload.role, avatarId })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(payload.sub)
     .setIssuedAt()
@@ -43,8 +47,9 @@ export async function verifySession(token: string): Promise<SessionPayload | nul
     const email = typeof payload.email === "string" ? payload.email : "";
     const name = typeof payload.name === "string" ? payload.name : "";
     const role = payload.role === "admin" || payload.role === "member" ? payload.role : "member";
+    const avatarId = parseLablogAvatarId(payload.avatarId);
     if (!sub || !email) return null;
-    return { sub, email, name, role };
+    return { sub, email, name, role, avatarId };
   } catch {
     return null;
   }

@@ -13,7 +13,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <AppShell userName={session.name} role={session.role}>
+    <AppShell userName={session.name} role={session.role} avatarId={session.avatarId}>
       {children}
     </AppShell>
   );

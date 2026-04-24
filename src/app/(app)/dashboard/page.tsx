@@ -1,23 +1,24 @@
 import { format, startOfWeek, endOfWeek } from "date-fns";
 import Link from "next/link";
-import { getUserById, listAllLogs, listFeed } from "@/lib/db";
+import { UserAvatar } from "@/components/UserAvatar";
+import { listAllLogs, listDirectoryUsers, listFeed } from "@/lib/db";
 
 export default async function DashboardPage() {
   const today = format(new Date(), "yyyy-MM-dd");
-  const logs = await listAllLogs();
+  const [logs, feed, directory] = await Promise.all([
+    listAllLogs(),
+    listFeed(12),
+    listDirectoryUsers(),
+  ]);
+  const nameById = Object.fromEntries(directory.map((u) => [u.id, u.name]));
+  const avatarById = Object.fromEntries(directory.map((u) => [u.id, u.avatarId]));
   const todayLogs = logs.filter((l) => l.date === today);
-  const feed = await listFeed(12);
 
   const ws = startOfWeek(new Date(), { weekStartsOn: 1 });
   const we = endOfWeek(new Date(), { weekStartsOn: 1 });
   const weekStart = format(ws, "yyyy-MM-dd");
   const weekEnd = format(we, "yyyy-MM-dd");
   const weekLogs = logs.filter((l) => l.date >= weekStart && l.date <= weekEnd);
-
-  async function nameFor(id: string) {
-    const u = await getUserById(id);
-    return u?.name ?? id;
-  }
 
   return (
     <div className="space-y-10">
@@ -63,24 +64,33 @@ export default async function DashboardPage() {
             <p className="text-slate-500 text-sm">No logs yet for today.</p>
           ) : (
             <ul className="space-y-3">
-              {await Promise.all(
-                todayLogs.map(async (log) => (
+              {todayLogs.map((log) => {
+                const author = nameById[log.userId] ?? log.userId;
+                return (
                   <li
                     key={log.id}
                     className="rounded-lg border border-lab-border bg-lab-bg/40 px-4 py-3"
                   >
                     <p className="font-medium text-white">{log.title}</p>
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-slate-500">
                       <span className="rounded border border-border bg-muted/40 px-1.5 py-0.5 text-slate-200">
                         {log.category}
                       </span>
-                      <span className="mx-1.5">·</span>
-                      {(await nameFor(log.userId))}
+                      <span className="mx-0.5">·</span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <UserAvatar
+                          avatarId={avatarById[log.userId] ?? 1}
+                          size={20}
+                          title={author}
+                          className="border-lab-border bg-lab-bg"
+                        />
+                        {author}
+                      </span>
                       {log.tags.length ? ` · ${log.tags.join(", ")}` : ""}
                     </p>
                   </li>
-                ))
-              )}
+                );
+              })}
             </ul>
           )}
         </section>
@@ -92,11 +102,19 @@ export default async function DashboardPage() {
           ) : (
             <ul className="space-y-2 text-sm">
               {feed.map((item) => (
-                <li key={item.id} className="text-slate-400 flex gap-2">
-                  <span className="text-slate-600 shrink-0">
-                    {format(new Date(item.createdAt), "MMM d HH:mm")}
+                <li key={item.id} className="flex gap-2 text-slate-400">
+                  <UserAvatar
+                    avatarId={avatarById[item.userId] ?? 1}
+                    size={22}
+                    title={nameById[item.userId] ?? item.userId}
+                    className="mt-0.5 shrink-0 border-lab-border bg-lab-bg"
+                  />
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-slate-600">
+                      {format(new Date(item.createdAt), "MMM d HH:mm")}
+                    </span>
+                    <span className="text-slate-300">{item.message}</span>
                   </span>
-                  <span className="text-slate-300">{item.message}</span>
                 </li>
               ))}
             </ul>

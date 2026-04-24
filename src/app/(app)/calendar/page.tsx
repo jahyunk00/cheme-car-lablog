@@ -12,6 +12,7 @@ export default async function CalendarPage() {
     listDirectoryUsers(),
   ]);
   const nameById = Object.fromEntries(directory.map((u) => [u.id, u.name]));
+  const avatarById = Object.fromEntries(directory.map((u) => [u.id, u.avatarId]));
   const eventsWithNames = events.map((e) => ({
     ...e,
     completedByName: e.completedByUserId ? (nameById[e.completedByUserId] ?? e.completedByUserId) : null,
@@ -22,6 +23,7 @@ export default async function CalendarPage() {
     date: l.date,
     title: l.title,
     userName: nameById[l.userId] ?? l.userId,
+    userAvatarId: avatarById[l.userId] ?? 1,
     description: l.description,
     tags: l.tags,
     category: l.category,

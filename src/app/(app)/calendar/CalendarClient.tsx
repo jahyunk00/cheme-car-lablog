@@ -127,6 +127,7 @@ export function CalendarClient({
         id: l.id,
         title: l.title,
         userName: l.userName,
+        userAvatarId: l.userAvatarId,
         description: l.description,
         tags: l.tags,
         category: l.category,

@@ -4,11 +4,16 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import type { LablogAvatarId } from "@/lib/avatar-ids";
+import { DEFAULT_AVATAR_ID } from "@/lib/avatar-ids";
+import { AvatarPicker } from "@/components/ui/avatar-picker";
+
 export function RegisterForm() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [avatarId, setAvatarId] = useState<LablogAvatarId>(DEFAULT_AVATAR_ID);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -20,7 +25,8 @@ export function RegisterForm() {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+        credentials: "same-origin",
+        body: JSON.stringify({ name, email, password, avatarId }),
       });
       const raw = await res.text();
       let data: { error?: string } = {};
@@ -94,6 +100,10 @@ export function RegisterForm() {
           className="w-full"
         />
         <p className="text-xs text-slate-500">Minimum 8 characters.</p>
+      </div>
+      <div className="space-y-2">
+        <p className="field-label">Avatar</p>
+        <AvatarPicker value={avatarId} onChange={setAvatarId} displayName={name} />
       </div>
       {error ? (
         <p className="text-sm text-red-400 rounded-lg bg-red-950/30 border border-red-900/40 px-3 py-2">{error}</p>

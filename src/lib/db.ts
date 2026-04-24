@@ -1,3 +1,4 @@
+import { parseLablogAvatarId } from "./avatar-ids";
 import type { CalendarEventEntry, FeedItem, LogEntry, User, UserRole } from "./types";
 import { parseLogCategory } from "./log-categories";
 import { createAdminClient } from "@/utils/supabase/admin";
@@ -42,12 +43,24 @@ function isMissingLablogCategoryColumnError(err: unknown): boolean {
   return false;
 }
 
+function isMissingUserAvatarColumnError(err: unknown): boolean {
+  const t = supabaseErrorText(err);
+  if (!t) return false;
+  const lower = t.toLowerCase();
+  if (!lower.includes("avatar_id")) return false;
+  if (lower.includes("lablog_users")) return true;
+  if (lower.includes("schema cache")) return true;
+  if (lower.includes("column")) return true;
+  return false;
+}
+
 function mapUser(row: {
   id: string;
   name: string;
   email: string;
   role: string;
   password_hash: string;
+  avatar_id?: number | null;
 }): User {
   const role: UserRole = row.role === "admin" ? "admin" : "member";
   return {
@@ -56,6 +69,7 @@ function mapUser(row: {
     email: row.email,
     role,
     passwordHash: row.password_hash,
+    avatarId: parseLablogAvatarId(row.avatar_id),
   };
 }
 
@@ -136,15 +150,16 @@ export async function getUserById(id: string): Promise<User | undefined> {
 }
 
 export async function listDirectoryUsers(): Promise<
-  { id: string; name: string; email: string; role: UserRole }[]
+  { id: string; name: string; email: string; role: UserRole; avatarId: number }[]
 > {
-  const { data, error } = await admin().from("lablog_users").select("id, name, email, role");
+  const { data, error } = await admin().from("lablog_users").select("*");
   if (error) throw new Error(error.message);
   return (data ?? []).map((row) => ({
     id: row.id as string,
     name: row.name as string,
     email: row.email as string,
     role: row.role === "admin" ? "admin" : "member",
+    avatarId: parseLablogAvatarId((row as { avatar_id?: unknown }).avatar_id),
   }));
 }
 
@@ -176,29 +191,52 @@ export async function getLog(id: string): Promise<LogEntry | undefined> {
 }
 
 export async function upsertUser(user: User) {
-  const { error } = await admin().from("lablog_users").upsert(
-    {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      password_hash: user.passwordHash,
-    },
-    { onConflict: "id" }
-  );
+  const client = admin();
+  const withAvatar = {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    password_hash: user.passwordHash,
+    avatar_id: user.avatarId,
+  };
+  const legacyNoAvatar = {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    password_hash: user.passwordHash,
+  };
+  let { error } = await client.from("lablog_users").upsert(withAvatar, { onConflict: "id" });
+  if (error && isMissingUserAvatarColumnError(error)) {
+    ({ error } = await client.from("lablog_users").upsert(legacyNoAvatar, { onConflict: "id" }));
+  }
   if (error) throw new Error(error.message);
 }
 
 /** Insert a new user (registration). Fails if email already exists. */
 export async function insertUser(user: User) {
   const email = user.email.trim().toLowerCase();
-  const { error } = await admin().from("lablog_users").insert({
+  const client = admin();
+  const withAvatar = {
     id: user.id,
     name: user.name.trim(),
     email,
     role: user.role,
     password_hash: user.passwordHash,
-  });
+    avatar_id: user.avatarId,
+  };
+  const legacyNoAvatar = {
+    id: user.id,
+    name: user.name.trim(),
+    email,
+    role: user.role,
+    password_hash: user.passwordHash,
+  };
+  let { error } = await client.from("lablog_users").insert(withAvatar);
+  if (error && isMissingUserAvatarColumnError(error)) {
+    ({ error } = await client.from("lablog_users").insert(legacyNoAvatar));
+  }
   if (error) {
     const code = (error as { code?: string }).code;
     if (code === "23505" || /duplicate|unique/i.test(error.message)) {

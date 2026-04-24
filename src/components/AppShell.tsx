@@ -1,13 +1,17 @@
 import Link from "next/link";
+
 import { AppNav } from "@/components/AppNav";
+import { UserAvatar } from "@/components/UserAvatar";
 
 export function AppShell({
   userName,
   role,
+  avatarId,
   children,
 }: {
   userName: string;
   role: string;
+  avatarId: number;
   children: React.ReactNode;
 }) {
   return (
@@ -26,10 +30,13 @@ export function AppShell({
             </div>
           </div>
           <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-lab-border/60 pt-3 text-sm text-slate-400 lg:border-t-0 lg:pt-0">
-            <span className="min-w-0 truncate sm:max-w-[14rem] lg:max-w-none">
-              {userName}
-              <span className="text-slate-600"> · </span>
-              <span className="capitalize">{role}</span>
+            <span className="flex min-w-0 max-w-full items-center gap-2 truncate sm:max-w-[14rem] lg:max-w-none">
+              <UserAvatar avatarId={avatarId} size={36} title={userName} className="border-lab-border bg-lab-bg" />
+              <span className="min-w-0 truncate">
+                {userName}
+                <span className="text-slate-600"> · </span>
+                <span className="capitalize">{role}</span>
+              </span>
             </span>
             <form action="/api/auth/logout" method="post" className="shrink-0">
               <button type="submit" className="btn-ghost text-sm">

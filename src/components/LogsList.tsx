@@ -1,11 +1,13 @@
 import Link from "next/link";
 
+import { UserAvatar } from "@/components/UserAvatar";
 import type { LogCategory, LogsCategoryFilterValue } from "@/lib/log-categories";
 
 export type LogRow = {
   id: string;
   userId: string;
   userName: string;
+  userAvatarId: number;
   date: string;
   title: string;
   description: string;
@@ -37,13 +39,18 @@ export function LogsList({
               <div className="flex min-w-0 justify-between gap-2">
                 <div className="min-w-0 flex-1">
                     <p className="break-words font-medium text-foreground">{log.title}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">
+                    <p className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-muted-foreground">
                       <span className="rounded border border-border bg-muted px-1.5 py-0.5 font-medium text-foreground">
                         {log.category}
                       </span>
-                      <span className="mx-1.5">·</span>
-                      {log.date} · {log.userName}
-                    {log.hours != null ? ` · ${log.hours}h` : ""}
+                      <span className="mx-0.5">·</span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <UserAvatar avatarId={log.userAvatarId} size={18} title={log.userName} />
+                        <span>
+                          {log.date} · {log.userName}
+                          {log.hours != null ? ` · ${log.hours}h` : ""}
+                        </span>
+                      </span>
                   </p>
                   {log.tags.length ? (
                     <p className="mt-2 text-xs text-primary/90">{log.tags.join(" · ")}</p>

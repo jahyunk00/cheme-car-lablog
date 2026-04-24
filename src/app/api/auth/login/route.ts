@@ -33,6 +33,7 @@ export async function POST(request: Request) {
       email: user.email,
       name: user.name,
       role: user.role,
+      avatarId: user.avatarId,
     });
 
     const res = NextResponse.json({ ok: true });
