@@ -34,7 +34,6 @@ export default async function LogUploadPage({ searchParams }: Props) {
       category: log.category,
       title: log.title,
       description: log.description,
-      tags: log.tags.join(", "),
       hours: log.hours != null ? String(log.hours) : "",
     };
     formKey = `edit-${log.id}`;
@@ -44,7 +43,6 @@ export default async function LogUploadPage({ searchParams }: Props) {
       category: "Other",
       title: "",
       description: "",
-      tags: "",
       hours: "",
     };
     formKey = `new-${dateParam}`;

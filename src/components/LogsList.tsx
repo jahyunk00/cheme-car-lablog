@@ -68,11 +68,7 @@ export function LogsList({
         <Link href="/calendar" className="text-primary hover:underline">
           calendar
         </Link>{" "}
-        and pick a day, then use{" "}
-        <Link href="/logs/upload" className="text-primary hover:underline">
-          New log
-        </Link>{" "}
-        with the date prefilled.
+        and pick a day to see logs for that day.
       </p>
     </div>
   );

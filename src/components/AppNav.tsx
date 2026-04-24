@@ -7,7 +7,6 @@ const links = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/calendar", label: "Calendar" },
   { href: "/logs", label: "Logs" },
-  { href: "/logs/upload", label: "Upload" },
   { href: "/weekly-summary", label: "Weekly summary" },
 ];
 

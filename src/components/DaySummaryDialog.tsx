@@ -104,13 +104,6 @@ export function DaySummaryDialog({
           >
             View all logs
           </Link>
-          <Link
-            href={`/logs/upload?date=${dateStr}`}
-            className="inline-flex items-center rounded-lg border border-border px-4 py-2 text-sm text-foreground hover:bg-accent"
-            onClick={onClose}
-          >
-            Upload log for this day
-          </Link>
           <button
             type="button"
             onClick={() => {

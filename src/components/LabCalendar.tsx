@@ -5,7 +5,6 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import FullCalendar from "@fullcalendar/react";
 import { addDays, format, parseISO } from "date-fns";
-import { useRouter } from "next/navigation";
 import { useCallback, useMemo } from "react";
 
 export type CalendarLog = {
@@ -38,8 +37,6 @@ export function LabCalendar({
   onDayClick: (dateStr: string) => void;
   onEditScheduledEvent: (eventId: string) => void;
 }) {
-  const router = useRouter();
-
   const fcEvents: EventInput[] = useMemo(() => {
     const scheduled: EventInput[] = scheduledEvents.map((e) => {
       const single = !e.endDate || e.endDate === e.startDate;
@@ -153,7 +150,7 @@ export function LabCalendar({
           }
           info.jsEvent.preventDefault();
           const d = info.event.startStr.slice(0, 10);
-          router.push(`/logs/upload?date=${d}`);
+          onDayClick(d);
         }}
         headerToolbar={{
           left: "prev,next today",

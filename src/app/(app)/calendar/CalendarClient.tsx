@@ -1,13 +1,11 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { format, parseISO } from "date-fns";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { DaySummaryDialog, type DayLogRow } from "@/components/DaySummaryDialog";
 import { EventModal } from "@/components/EventModal";
 import type { CalendarLog, CalendarScheduledSlim } from "@/components/LabCalendar";
-import { Calendar } from "@/components/ui/calendar";
 import type { CalendarEventEntry } from "@/lib/types";
 
 const LabCalendar = dynamic(() => import("@/components/LabCalendar").then((m) => m.LabCalendar), {
@@ -43,7 +41,6 @@ export function CalendarClient({
   const [draft, setDraft] = useState(freshDraft);
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [summaryDateStr, setSummaryDateStr] = useState<string | null>(null);
-  const [pickerDate, setPickerDate] = useState<Date | undefined>(undefined);
 
   const scheduled: CalendarScheduledSlim[] = useMemo(
     () =>
@@ -99,11 +96,6 @@ export function CalendarClient({
   const openDaySummary = useCallback((dateStr: string) => {
     setSummaryDateStr(dateStr);
     setSummaryOpen(true);
-    try {
-      setPickerDate(parseISO(`${dateStr}T12:00:00`));
-    } catch {
-      /* ignore */
-    }
   }, []);
 
   const logsForSummary: DayLogRow[] = useMemo(() => {
@@ -134,19 +126,6 @@ export function CalendarClient({
   return (
     <>
       <div className="space-y-4">
-        <div className="rounded-xl border border-lab-border bg-lab-surface p-4">
-          <p className="text-sm text-slate-400 mb-3">
-            Select a date below to see lab logs completed that day.
-          </p>
-          <Calendar
-            mode="single"
-            selected={pickerDate}
-            onSelect={(d) => {
-              setPickerDate(d);
-              if (d) openDaySummary(format(d, "yyyy-MM-dd"));
-            }}
-          />
-        </div>
         <LabCalendar
           logs={logs}
           scheduledEvents={scheduled}

@@ -1,7 +1,18 @@
 "use client";
 
+import { ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { LOG_CATEGORIES, type LogCategory } from "@/lib/log-categories";
 
 export type LogPayload = {
@@ -10,7 +21,6 @@ export type LogPayload = {
   category: LogCategory;
   title: string;
   description: string;
-  tags: string;
   hours: string;
 };
 
@@ -26,7 +36,6 @@ export function LogForm({
   const [category, setCategory] = useState<LogCategory>(initial.category);
   const [title, setTitle] = useState(initial.title);
   const [description, setDescription] = useState(initial.description);
-  const [tags, setTags] = useState(initial.tags);
   const [hours, setHours] = useState(initial.hours);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -36,26 +45,14 @@ export function LogForm({
     setError(null);
     setLoading(true);
     try {
-      const tagList = tags
-        .split(",")
-        .map((t) => t.trim())
-        .filter(Boolean);
       const hoursNum = hours.trim() === "" ? null : Number(hours);
       if (hours.trim() !== "" && (Number.isNaN(hoursNum) || hoursNum! < 0)) {
         setError("Hours must be a non-negative number.");
         return;
       }
 
-      const body = {
-        date,
-        category,
-        title,
-        description,
-        tags: tagList,
-        hours: hoursNum,
-      };
-
       const isEdit = Boolean(initial.id);
+      const body = { date, category, title, description, hours: hoursNum };
       const res = await fetch(isEdit ? `/api/logs/${initial.id}` : "/api/logs", {
         method: isEdit ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
@@ -95,19 +92,33 @@ export function LogForm({
         </div>
       </div>
       <div className="space-y-1">
-        <label className="field-label">Log for</label>
-        <select
-          value={category}
-          onChange={(e) => setCategory(e.target.value as LogCategory)}
-          required
-          className="w-full"
-        >
-          {LOG_CATEGORIES.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
+        <span className="field-label">Log for</span>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              type="button"
+              variant="outline"
+              className="h-auto min-h-10 w-full justify-between border-input bg-background px-3 py-2 font-normal text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground"
+            >
+              <span className="truncate">{category}</span>
+              <ChevronDown className="ms-2 size-4 shrink-0 opacity-60" aria-hidden />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="min-w-[var(--radix-dropdown-menu-trigger-width)]">
+            <DropdownMenuLabel>Subsystem</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuRadioGroup
+              value={category}
+              onValueChange={(v) => setCategory(v as LogCategory)}
+            >
+              {LOG_CATEGORIES.map((c) => (
+                <DropdownMenuRadioItem key={c} value={c}>
+                  {c}
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
         <p className="text-xs text-muted-foreground">Which subsystem this entry is about.</p>
       </div>
       <div className="space-y-1">
@@ -121,15 +132,6 @@ export function LogForm({
           onChange={(e) => setDescription(e.target.value)}
           rows={4}
           className="w-full resize-y min-h-[100px]"
-        />
-      </div>
-      <div className="space-y-1">
-        <label className="field-label">Tags (comma-separated)</label>
-        <input
-          value={tags}
-          onChange={(e) => setTags(e.target.value)}
-          placeholder="battery, testing, design"
-          className="w-full"
         />
       </div>
       {error ? <p className="text-sm text-red-400">{error}</p> : null}

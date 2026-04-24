@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { listAllLogs, listDirectoryUsers } from "@/lib/db";
 import { LogsList, type LogRow } from "@/components/LogsList";
 import { getSession } from "@/lib/session";
@@ -25,14 +24,9 @@ export default async function LogsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold text-foreground">Logs</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Browse everything the team has logged.</p>
-        </div>
-        <Link href="/logs/upload" className="btn-primary inline-flex text-sm no-underline hover:no-underline">
-          Upload log
-        </Link>
+      <div>
+        <h1 className="text-2xl font-semibold text-foreground">Logs</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Browse everything the team has logged.</p>
       </div>
       <LogsList logs={logs} currentUserId={session.sub} role={session.role} />
     </div>
