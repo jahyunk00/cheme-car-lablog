@@ -2,6 +2,13 @@
  * Public landing copy for `/` — edit this file to match your club or lab.
  * (LabLog stays the product name; the club block below is yours.)
  */
+
+/** Browser tab / bookmark icon and in-app branding (place file under `public/`). */
+export const clubBrandLogo = {
+  src: "/brand/chem-e-car-ku-logo.png",
+  alt: "Chem-E Car KU Jayhawks",
+} as const;
+
 export const clubIntro = {
   kicker: "About this club",
   clubName: "Chem-E Car Lab",

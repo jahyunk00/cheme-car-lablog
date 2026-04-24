@@ -1,6 +1,8 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { AppNav, type AppNavLink } from "@/components/AppNav";
+import { clubBrandLogo } from "@/lib/club-intro";
 import { UserAvatar } from "@/components/UserAvatar";
 import { canViewTeamMetrics, isAdmin } from "@/lib/roles";
 import type { UserRole } from "@/lib/types";
@@ -47,9 +49,18 @@ export function AppShell({
           <div className="flex min-w-0 flex-col gap-2 lg:flex-row lg:items-center lg:gap-6">
             <Link
               href="/"
-              className="shrink-0 text-lg font-semibold tracking-tight text-white hover:text-blue-200"
+              className="flex shrink-0 items-center gap-2.5 text-lg font-semibold tracking-tight text-white hover:text-blue-200"
             >
-              LabLog
+              <Image
+                src={clubBrandLogo.src}
+                alt=""
+                width={36}
+                height={36}
+                className="h-9 w-9 shrink-0 rounded-md border border-lab-border bg-lab-bg object-contain"
+                aria-hidden
+                priority
+              />
+              <span>LabLog</span>
             </Link>
             <div className="-mx-3 overflow-x-auto px-3 pb-0.5 scrollbar-none sm:mx-0 sm:px-0 lg:pb-0">
               <AppNav links={navLinks} />

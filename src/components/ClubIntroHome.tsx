@@ -1,9 +1,10 @@
 "use client";
 
 import { BarChart2, Calendar, ChevronRight, FileText, LayoutDashboard } from "lucide-react";
+import Image from "next/image";
 import NextLink from "next/link";
 
-import { clubIntro } from "@/lib/club-intro";
+import { clubBrandLogo, clubIntro } from "@/lib/club-intro";
 
 const appLinks = [
   { href: "/dashboard", label: "Dashboard", description: "Overview, feed, and quick week snapshot.", icon: LayoutDashboard },
@@ -16,8 +17,19 @@ export function ClubIntroHome({ isAuthed, userName }: { isAuthed: boolean; userN
   return (
     <div className="relative min-h-screen bg-lab-bg text-foreground">
       <header className="fixed inset-x-0 top-0 z-50 flex items-center justify-between border-b border-lab-border/80 bg-lab-bg/90 px-3 py-3 pt-[max(0.75rem,env(safe-area-inset-top,0px))] backdrop-blur-md sm:px-4">
-        <NextLink href="/" className="text-lg font-semibold tracking-tight text-foreground hover:text-primary">
-          LabLog
+        <NextLink
+          href="/"
+          className="flex items-center gap-2.5 text-lg font-semibold tracking-tight text-foreground hover:text-primary"
+        >
+          <Image
+            src={clubBrandLogo.src}
+            alt=""
+            width={40}
+            height={40}
+            className="h-9 w-9 shrink-0 rounded-md border border-lab-border bg-background object-contain"
+            aria-hidden
+          />
+          <span>LabLog</span>
         </NextLink>
         <nav className="flex items-center gap-2 sm:gap-3 text-sm">
           {isAuthed ? (
