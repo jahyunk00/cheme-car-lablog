@@ -13,15 +13,15 @@ export const clubIntro = {
   kicker: "About this club",
   clubName: "Chem-E Car Lab",
   tagline:
-    "A student team that designs, tests, and races a small vehicle powered by a hydrogen fuel cell—built for the AIChE Chem-E Car competition.",
+    "A student team that designs, tests, and races a small chemically powered vehicle for the AIChE Chem-E Car competition. We won the Mid American Regional Competition in 2026.",
   paragraphs: [
-    "We meet regularly to work on chemistry, controls, mechanical design, and safety. The goal is a reliable car that stops on target and teaches everyone something new each semester.",
+    "We won the Mid American Regional Competition in 2026. Between regionals and nationals we meet regularly to work on chemistry, controls, mechanical design, and safety. The goal is a reliable car that stops on target and teaches everyone something new each semester.",
     "New members are welcome whether you are focused on hands-on bench work, modeling, documentation, or logistics. We split work so competition deadlines stay manageable alongside classes.",
   ],
   focusAreas: [
     {
-      title: "Electrochemistry & power",
-      body: "Cell testing, efficiency, and how we translate chemistry into predictable electrical output for the motor.",
+      title: "Chemistry & power",
+      body: "Reaction timing, energy delivery, and testing so the car’s chemical system performs safely and predictably for the motor and stopping challenge.",
     },
     {
       title: "Mechanical & integration",
