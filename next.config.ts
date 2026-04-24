@@ -5,6 +5,12 @@ import type { NextConfig } from "next";
 // where the dev server was started from an unexpected cwd or env was not picked up).
 loadEnvConfig(process.cwd());
 
-const nextConfig: NextConfig = {};
+const nextConfig: NextConfig = {
+  // Next 15.5+ can throw RSC / "React Client Manifest" errors in dev when this is on
+  // (segment-explorer-node). Turn it off for a stable local dev experience.
+  experimental: {
+    devtoolSegmentExplorer: false,
+  },
+};
 
 export default nextConfig;

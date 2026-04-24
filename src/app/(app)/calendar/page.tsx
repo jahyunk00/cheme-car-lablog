@@ -12,6 +12,10 @@ export default async function CalendarPage() {
     listDirectoryUsers(),
   ]);
   const nameById = Object.fromEntries(directory.map((u) => [u.id, u.name]));
+  const eventsWithNames = events.map((e) => ({
+    ...e,
+    completedByName: e.completedByUserId ? (nameById[e.completedByUserId] ?? e.completedByUserId) : null,
+  }));
   const slim = logs.map((l) => ({ id: l.id, date: l.date, title: l.title, userId: l.userId }));
   const logDetails = logs.map((l) => ({
     id: l.id,
@@ -28,7 +32,8 @@ export default async function CalendarPage() {
       <div>
         <h1 className="text-2xl font-semibold text-white">Calendar</h1>
         <p className="mt-1 max-w-prose text-pretty text-sm text-slate-400">
-          <span className="text-emerald-400/90">Green</span> blocks are scheduled events (tap to edit).{" "}
+          <span className="text-emerald-400/90">Green</span> blocks are open deadlines (tap to edit or mark
+          complete). <span className="text-slate-400">Slate</span> means finished — we store who completed it.{" "}
           <span className="text-blue-300/90">Blue</span> shows how many lab logs that day (tap for the day summary).{" "}
           <strong className="text-slate-300">Tap a day</strong> on the grid to see what was logged. Use{" "}
           <strong className="text-slate-300">+ Event</strong> to schedule on the grid.
@@ -37,7 +42,7 @@ export default async function CalendarPage() {
       <CalendarClient
         logs={slim}
         logDetails={logDetails}
-        events={events}
+        events={eventsWithNames}
         currentUserId={session.sub}
         role={session.role}
       />

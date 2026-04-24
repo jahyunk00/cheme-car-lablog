@@ -231,6 +231,8 @@ function mapCalendarEvent(row: {
   end_date: string | null;
   created_at: string;
   updated_at: string;
+  completed_at?: string | null;
+  completed_by_user_id?: string | null;
 }): CalendarEventEntry {
   return {
     id: row.id,
@@ -241,6 +243,8 @@ function mapCalendarEvent(row: {
     endDate: row.end_date ? row.end_date.slice(0, 10) : null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    completedAt: row.completed_at ?? null,
+    completedByUserId: row.completed_by_user_id ?? null,
   };
 }
 
@@ -275,6 +279,8 @@ export async function saveCalendarEvent(entry: CalendarEventEntry) {
       end_date: entry.endDate,
       created_at: entry.createdAt,
       updated_at: entry.updatedAt,
+      completed_at: entry.completedAt,
+      completed_by_user_id: entry.completedByUserId,
     },
     { onConflict: "id" }
   );

@@ -13,13 +13,27 @@ const LabCalendar = dynamic(() => import("@/components/LabCalendar").then((m) =>
   loading: () => <p className="text-slate-500 text-sm">Loading calendar…</p>,
 });
 
-function freshDraft() {
+type EventDraft = {
+  id: string | null;
+  title: string;
+  description: string;
+  startDate: string;
+  endDate: string | null;
+  completedAt: string | null;
+  completedByUserId: string | null;
+  completedByName: string | null;
+};
+
+function freshDraft(): EventDraft {
   return {
-    id: null as string | null,
+    id: null,
     title: "",
     description: "",
     startDate: "",
-    endDate: null as string | null,
+    endDate: null,
+    completedAt: null,
+    completedByUserId: null,
+    completedByName: null,
   };
 }
 
@@ -51,6 +65,7 @@ export function CalendarClient({
         description: e.description,
         startDate: e.startDate,
         endDate: e.endDate,
+        completed: Boolean(e.completedAt),
       })),
     [events]
   );
@@ -62,6 +77,9 @@ export function CalendarClient({
       description: "",
       startDate: dateStr,
       endDate: null,
+      completedAt: null,
+      completedByUserId: null,
+      completedByName: null,
     });
     setModalOpen(true);
   }, []);
@@ -76,6 +94,9 @@ export function CalendarClient({
         description: e.description,
         startDate: e.startDate,
         endDate: e.endDate,
+        completedAt: e.completedAt,
+        completedByUserId: e.completedByUserId,
+        completedByName: e.completedByName ?? null,
       });
       setModalOpen(true);
     },
@@ -150,6 +171,9 @@ export function CalendarClient({
           description: draft.description,
           startDate: draft.startDate || new Date().toISOString().slice(0, 10),
           endDate: draft.endDate,
+          completedAt: draft.completedAt,
+          completedByUserId: draft.completedByUserId,
+          completedByName: draft.completedByName,
         }}
         currentUserId={currentUserId}
         role={role}

@@ -21,6 +21,8 @@ export type CalendarScheduledSlim = {
   description: string;
   startDate: string;
   endDate: string | null;
+  /** When true, the deadline was marked complete (different color on the grid). */
+  completed: boolean;
 };
 
 export function LabCalendar({
@@ -44,16 +46,17 @@ export function LabCalendar({
         !single && e.endDate
           ? format(addDays(parseISO(`${e.endDate}T12:00:00`), 1), "yyyy-MM-dd")
           : undefined;
+      const done = e.completed;
       return {
         id: `cal-${e.id}`,
-        title: e.title,
+        title: done ? `✓ ${e.title}` : e.title,
         start: e.startDate,
         end: endExclusive,
         allDay: true,
-        backgroundColor: "rgba(5, 150, 105, 0.45)",
-        borderColor: "#34d399",
-        textColor: "#ecfdf5",
-        extendedProps: { kind: "event" as const, eventId: e.id },
+        backgroundColor: done ? "rgba(71, 85, 105, 0.55)" : "rgba(5, 150, 105, 0.45)",
+        borderColor: done ? "#94a3b8" : "#34d399",
+        textColor: done ? "#f1f5f9" : "#ecfdf5",
+        extendedProps: { kind: "event" as const, eventId: e.id, completed: done },
       };
     });
 

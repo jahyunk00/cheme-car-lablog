@@ -50,6 +50,8 @@ export async function POST(request: Request) {
     endDate: end,
     createdAt: now,
     updatedAt: now,
+    completedAt: null,
+    completedByUserId: null,
   };
 
   await saveCalendarEvent(entry);

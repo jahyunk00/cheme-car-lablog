@@ -50,6 +50,8 @@ export async function PATCH(request: Request, context: RouteContext) {
     description: parsed.data.description ?? existing.description,
     startDate,
     endDate,
+    completedAt: existing.completedAt,
+    completedByUserId: existing.completedByUserId,
     updatedAt: new Date().toISOString(),
   };
 

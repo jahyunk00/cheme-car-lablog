@@ -44,4 +44,10 @@ export type CalendarEventEntry = {
   endDate: string | null;
   createdAt: string;
   updatedAt: string;
+  /** When set, the deadline was marked done (see `completedByUserId`). */
+  completedAt: string | null;
+  /** User who clicked “Mark complete” (not necessarily the event creator). */
+  completedByUserId: string | null;
+  /** Resolved on the server for display; not stored in DB. */
+  completedByName?: string | null;
 };
