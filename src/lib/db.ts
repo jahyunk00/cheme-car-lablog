@@ -172,26 +172,45 @@ export async function insertUser(user: User) {
   }
 }
 
+function logCategoryColumnMissing(msg: string) {
+  return /\bcategory\b.*schema cache|\bcategory\b.*column|Could not find the .*category/i.test(msg);
+}
+
 export async function saveLog(
   log: LogEntry,
   feedItem: Omit<FeedItem, "id" | "createdAt"> & { id?: string }
 ) {
   const client = admin();
-  const { error: logErr } = await client.from("lablog_logs").upsert(
-    {
-      id: log.id,
-      user_id: log.userId,
-      log_date: log.date,
-      title: log.title,
-      description: log.description,
-      tags: log.tags,
-      hours: log.hours,
-      category: log.category,
-      created_at: log.createdAt,
-      updated_at: log.updatedAt,
-    },
-    { onConflict: "id" }
-  );
+  const withCategory = {
+    id: log.id,
+    user_id: log.userId,
+    log_date: log.date,
+    title: log.title,
+    description: log.description,
+    tags: log.tags,
+    hours: log.hours,
+    category: log.category,
+    created_at: log.createdAt,
+    updated_at: log.updatedAt,
+  };
+  const legacyNoCategory = {
+    id: log.id,
+    user_id: log.userId,
+    log_date: log.date,
+    title: log.title,
+    description: log.description,
+    tags: log.tags,
+    hours: log.hours,
+    created_at: log.createdAt,
+    updated_at: log.updatedAt,
+  };
+
+  let { error: logErr } = await client.from("lablog_logs").upsert(withCategory, { onConflict: "id" });
+
+  if (logErr && logCategoryColumnMissing(logErr.message)) {
+    ({ error: logErr } = await client.from("lablog_logs").upsert(legacyNoCategory, { onConflict: "id" }));
+  }
+
   if (logErr) throw new Error(logErr.message);
 
   const feedId = feedItem.id ?? crypto.randomUUID();
