@@ -29,6 +29,17 @@ function formatCompletedAt(iso: string) {
   }
 }
 
+async function readApiError(res: Response, fallback: string) {
+  const raw = await res.text();
+  try {
+    const data = JSON.parse(raw) as { error?: string };
+    if (typeof data.error === "string") return data.error;
+  } catch {
+    if (raw.trim()) return raw.slice(0, 400);
+  }
+  return fallback + ` (${res.status})`;
+}
+
 export function EventModal({
   open,
   onClose,
@@ -72,17 +83,20 @@ export function EventModal({
         startDate,
         endDate: endDate.trim() === "" ? null : endDate.trim(),
       };
-      const res = await fetch(
-        isEdit ? `/api/calendar-events/${initial.id}` : "/api/calendar-events",
-        {
+      let res: Response;
+      try {
+        res = await fetch(isEdit ? `/api/calendar-events/${initial.id}` : "/api/calendar-events", {
           method: isEdit ? "PATCH" : "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
           body: JSON.stringify(body),
-        }
-      );
-      const data = await res.json().catch(() => ({}));
+        });
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Network error.");
+        return;
+      }
       if (!res.ok) {
-        setError(typeof data.error === "string" ? data.error : "Could not save");
+        setError(await readApiError(res, "Could not save"));
         return;
       }
       onSaved();
@@ -97,10 +111,18 @@ export function EventModal({
     if (!confirm("Delete this calendar event?")) return;
     setLoading(true);
     try {
-      const res = await fetch(`/api/calendar-events/${initial.id}`, { method: "DELETE" });
-      const data = await res.json().catch(() => ({}));
+      let res: Response;
+      try {
+        res = await fetch(`/api/calendar-events/${initial.id}`, {
+          method: "DELETE",
+          credentials: "same-origin",
+        });
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Network error.");
+        return;
+      }
       if (!res.ok) {
-        setError(typeof data.error === "string" ? data.error : "Could not delete");
+        setError(await readApiError(res, "Could not delete"));
         return;
       }
       onSaved();
@@ -115,15 +137,20 @@ export function EventModal({
     setError(null);
     setLoading(true);
     try {
-      const res = await fetch(`/api/calendar-events/${initial.id}/complete`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "same-origin",
-        body: JSON.stringify({ completed }),
-      });
-      const data = await res.json().catch(() => ({}));
+      let res: Response;
+      try {
+        res = await fetch(`/api/calendar-events/${initial.id}/complete`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ completed }),
+        });
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Network error.");
+        return;
+      }
       if (!res.ok) {
-        setError(typeof data.error === "string" ? data.error : "Could not update status");
+        setError(await readApiError(res, "Could not update status"));
         return;
       }
       onSaved();

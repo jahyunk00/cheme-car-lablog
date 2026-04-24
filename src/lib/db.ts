@@ -268,22 +268,48 @@ export async function getCalendarEvent(id: string): Promise<CalendarEventEntry |
   return mapCalendarEvent(data as Parameters<typeof mapCalendarEvent>[0]);
 }
 
+function calendarCompletionColumnMissing(msg: string) {
+  return /completed_at|completed_by_user_id|schema cache|Could not find the .*column/i.test(msg);
+}
+
 export async function saveCalendarEvent(entry: CalendarEventEntry) {
-  const { error } = await admin().from("lablog_calendar_events").upsert(
-    {
-      id: entry.id,
-      user_id: entry.userId,
-      title: entry.title,
-      description: entry.description,
-      start_date: entry.startDate,
-      end_date: entry.endDate,
-      created_at: entry.createdAt,
-      updated_at: entry.updatedAt,
-      completed_at: entry.completedAt,
-      completed_by_user_id: entry.completedByUserId,
-    },
-    { onConflict: "id" }
-  );
+  const client = admin();
+  const withCompletion = {
+    id: entry.id,
+    user_id: entry.userId,
+    title: entry.title,
+    description: entry.description,
+    start_date: entry.startDate,
+    end_date: entry.endDate,
+    created_at: entry.createdAt,
+    updated_at: entry.updatedAt,
+    completed_at: entry.completedAt,
+    completed_by_user_id: entry.completedByUserId,
+  };
+  const legacy = {
+    id: entry.id,
+    user_id: entry.userId,
+    title: entry.title,
+    description: entry.description,
+    start_date: entry.startDate,
+    end_date: entry.endDate,
+    created_at: entry.createdAt,
+    updated_at: entry.updatedAt,
+  };
+
+  const hasCompletionData = entry.completedAt != null || entry.completedByUserId != null;
+  let { error } = await client.from("lablog_calendar_events").upsert(withCompletion, { onConflict: "id" });
+
+  if (error && hasCompletionData && calendarCompletionColumnMissing(error.message)) {
+    throw new Error(
+      "This database is missing the calendar completion columns. In Supabase, run `supabase/migrations/004_lablog_calendar_event_completion.sql` (or `supabase db push`), then try again."
+    );
+  }
+
+  if (error && !hasCompletionData && calendarCompletionColumnMissing(error.message)) {
+    ({ error } = await client.from("lablog_calendar_events").upsert(legacy, { onConflict: "id" }));
+  }
+
   if (error) throw new Error(error.message);
 }
 

@@ -55,7 +55,13 @@ export async function PATCH(request: Request, context: RouteContext) {
     updatedAt: new Date().toISOString(),
   };
 
-  await saveCalendarEvent(next);
+  try {
+    await saveCalendarEvent(next);
+  } catch (err) {
+    console.error("[api/calendar-events PATCH]", err);
+    const message = err instanceof Error ? err.message : "Could not save event.";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
   return NextResponse.json({ event: next });
 }
 

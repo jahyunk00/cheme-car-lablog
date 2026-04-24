@@ -54,6 +54,12 @@ export async function POST(request: Request) {
     completedByUserId: null,
   };
 
-  await saveCalendarEvent(entry);
+  try {
+    await saveCalendarEvent(entry);
+  } catch (err) {
+    console.error("[api/calendar-events POST]", err);
+    const message = err instanceof Error ? err.message : "Could not save event.";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
   return NextResponse.json({ event: entry });
 }

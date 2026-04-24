@@ -38,7 +38,13 @@ export async function POST(request: Request, context: RouteContext) {
       completedByUserId: session.sub,
       updatedAt: new Date().toISOString(),
     };
-    await saveCalendarEvent(next);
+    try {
+      await saveCalendarEvent(next);
+    } catch (err) {
+      console.error("[api/calendar-events/complete POST]", err);
+      const message = err instanceof Error ? err.message : "Could not save event.";
+      return NextResponse.json({ error: message }, { status: 500 });
+    }
     return NextResponse.json({ event: next });
   }
 
@@ -56,6 +62,12 @@ export async function POST(request: Request, context: RouteContext) {
     completedByUserId: null,
     updatedAt: new Date().toISOString(),
   };
-  await saveCalendarEvent(next);
+  try {
+    await saveCalendarEvent(next);
+  } catch (err) {
+    console.error("[api/calendar-events/complete POST reopen]", err);
+    const message = err instanceof Error ? err.message : "Could not save event.";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
   return NextResponse.json({ event: next });
 }
