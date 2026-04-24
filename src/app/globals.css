@@ -84,8 +84,24 @@
 
 /* Tailwind v4 `@theme inline { … }` is not used here (project is Tailwind v3). Colors are mapped in `tailwind.config.ts`. */
 
+html {
+  @apply overflow-x-hidden;
+}
+
 body {
   @apply bg-background text-foreground antialiased min-h-screen;
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+@layer utilities {
+  .scrollbar-none {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 a {

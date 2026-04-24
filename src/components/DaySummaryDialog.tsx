@@ -37,7 +37,7 @@ export function DaySummaryDialog({
   }
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[60] flex items-end justify-center p-0 sm:items-center sm:p-4">
       <button
         type="button"
         className="absolute inset-0 bg-black/60"
@@ -45,12 +45,12 @@ export function DaySummaryDialog({
         onClick={onClose}
       />
       <div
-        className="relative z-[61] w-full max-w-lg rounded-xl border border-lab-border bg-lab-surface shadow-xl"
+        className="relative z-[61] max-h-[min(90dvh,calc(100dvh-env(safe-area-inset-bottom,0px)))] w-full max-w-lg rounded-t-xl border border-lab-border bg-lab-surface shadow-xl sm:max-h-[min(85vh,32rem)] sm:rounded-xl"
         role="dialog"
         aria-modal="true"
         aria-labelledby="day-summary-title"
       >
-        <div className="border-b border-lab-border px-5 py-4 flex items-start justify-between gap-3">
+        <div className="flex items-start justify-between gap-3 border-b border-lab-border px-4 py-3 sm:px-5 sm:py-4">
           <div>
             <h2 id="day-summary-title" className="text-lg font-semibold text-white">
               Work logged
@@ -66,7 +66,7 @@ export function DaySummaryDialog({
           </button>
         </div>
 
-        <div className="max-h-[min(60vh,420px)] overflow-y-auto px-5 py-4">
+        <div className="max-h-[min(50vh,320px)] overflow-y-auto px-4 py-3 sm:max-h-[min(60vh,420px)] sm:px-5 sm:py-4">
           {logs.length === 0 ? (
             <p className="text-sm text-slate-500">No lab logs for this day yet.</p>
           ) : (
@@ -96,10 +96,10 @@ export function DaySummaryDialog({
           )}
         </div>
 
-        <div className="flex flex-wrap gap-2 justify-end border-t border-lab-border px-5 py-4">
+        <div className="flex flex-col gap-2 border-t border-lab-border px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] sm:flex-row sm:flex-wrap sm:justify-end sm:px-5 sm:py-4 sm:pb-4">
           <Link
             href="/logs"
-            className="inline-flex items-center rounded-lg border border-border px-4 py-2 text-sm text-foreground hover:bg-accent"
+            className="inline-flex flex-1 items-center justify-center rounded-lg border border-border px-4 py-2.5 text-sm text-foreground hover:bg-accent sm:flex-initial"
             onClick={onClose}
           >
             View all logs
@@ -109,7 +109,7 @@ export function DaySummaryDialog({
             onClick={() => {
               onAddEvent();
             }}
-            className="inline-flex items-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500"
+            className="inline-flex flex-1 items-center justify-center rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-500 sm:flex-initial"
           >
             Add event this day
           </button>

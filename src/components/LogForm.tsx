@@ -96,7 +96,7 @@ export function LogForm({
   const showDelete = Boolean(isAdmin && initial.id);
 
   return (
-    <form onSubmit={submit} className="space-y-4 rounded-xl border border-border bg-card p-5">
+    <form onSubmit={submit} className="space-y-4 rounded-xl border border-border bg-card p-4 sm:p-5">
       <h2 className="text-lg font-medium text-foreground">{initial.id ? "Edit log" : "New log"}</h2>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1">

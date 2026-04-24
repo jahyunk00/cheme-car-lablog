@@ -27,11 +27,11 @@ export default async function CalendarPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold text-white">Calendar</h1>
-        <p className="text-slate-400 mt-1 text-sm">
-          <span className="text-emerald-400/90">Green</span> blocks are scheduled events (click to edit).{" "}
-          <span className="text-blue-300/90">Blue</span> shows how many lab logs that day (click to open the full Logs
-          view). <strong className="text-slate-300">Click a day</strong> on the month grid or the small calendar to see
-          what was logged that day. Use <strong className="text-slate-300">+ Event</strong> to schedule on the grid.
+        <p className="mt-1 max-w-prose text-pretty text-sm text-slate-400">
+          <span className="text-emerald-400/90">Green</span> blocks are scheduled events (tap to edit).{" "}
+          <span className="text-blue-300/90">Blue</span> shows how many lab logs that day (tap for the day summary).{" "}
+          <strong className="text-slate-300">Tap a day</strong> on the grid to see what was logged. Use{" "}
+          <strong className="text-slate-300">+ Event</strong> to schedule on the grid.
         </p>
       </div>
       <CalendarClient

@@ -13,11 +13,11 @@ export function AuthCard({
   footer?: ReactNode;
 }) {
   return (
-    <div className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-4 py-12 bg-lab-bg">
+    <div className="relative flex min-h-dvh min-h-screen flex-col items-center justify-center overflow-hidden bg-lab-bg px-3 py-10 pb-[max(2.5rem,env(safe-area-inset-bottom,0px))] pt-[max(2.5rem,env(safe-area-inset-top,0px))] sm:px-4 sm:py-12">
       <DottedSurface />
       <div className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-b from-lab-bg/85 via-[#0c1016]/75 to-slate-950/90" />
       <div className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(59,130,246,0.14),transparent)]" />
-      <div className="relative z-10 w-full max-w-md space-y-8 rounded-2xl border border-lab-border/80 bg-lab-surface/95 p-8 shadow-2xl shadow-black/40 backdrop-blur-sm">
+      <div className="relative z-10 w-full max-w-md space-y-6 rounded-2xl border border-lab-border/80 bg-lab-surface/95 p-5 shadow-2xl shadow-black/40 backdrop-blur-sm sm:space-y-8 sm:p-8">
         <div className="space-y-1 text-center sm:text-left">
           <p className="text-xs font-medium uppercase tracking-widest text-primary">LabLog</p>
           <h1 className="text-2xl font-semibold tracking-tight text-white">{title}</h1>

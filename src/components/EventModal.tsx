@@ -98,9 +98,9 @@ export function EventModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4">
       <div
-        className="w-full max-w-md rounded-xl border border-lab-border bg-lab-surface p-6 shadow-xl space-y-4"
+        className="max-h-[min(92dvh,calc(100dvh-env(safe-area-inset-bottom,0px)))] w-full max-w-md space-y-4 overflow-y-auto rounded-t-xl border border-lab-border bg-lab-surface p-4 pb-[max(1rem,env(safe-area-inset-bottom,0px))] shadow-xl sm:rounded-xl sm:p-6 sm:pb-6"
         role="dialog"
         aria-modal="true"
         aria-labelledby="event-modal-title"
@@ -145,7 +145,7 @@ export function EventModal({
             disabled={readOnly}
           />
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2">
           <div className="space-y-1">
             <label className="text-sm text-slate-300">Start date</label>
             <input
@@ -170,13 +170,13 @@ export function EventModal({
         </div>
         <p className="text-xs text-slate-600">End date is inclusive (last day of the event).</p>
         {error ? <p className="text-sm text-red-400">{error}</p> : null}
-        <div className="flex flex-wrap gap-2 justify-end pt-2">
+        <div className="flex flex-col gap-2 pt-2 min-[420px]:flex-row min-[420px]:flex-wrap min-[420px]:justify-end">
           {canDelete ? (
             <button
               type="button"
               onClick={remove}
               disabled={loading}
-              className="px-3 py-2 text-sm text-red-300 border border-red-900/50 hover:bg-red-950/40 rounded-lg mr-auto"
+              className="order-last w-full rounded-lg border border-red-900/50 px-3 py-2.5 text-sm text-red-300 hover:bg-red-950/40 min-[420px]:order-first min-[420px]:mr-auto min-[420px]:w-auto"
             >
               Delete
             </button>
@@ -184,7 +184,7 @@ export function EventModal({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-sm text-slate-300 border border-lab-border rounded-lg hover:bg-lab-border/30"
+            className="w-full rounded-lg border border-lab-border px-4 py-2.5 text-sm text-slate-300 hover:bg-lab-border/30 min-[420px]:w-auto"
           >
             Cancel
           </button>
@@ -193,7 +193,7 @@ export function EventModal({
               type="button"
               onClick={save}
               disabled={loading || !title.trim()}
-              className="px-4 py-2 text-sm bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg disabled:opacity-50"
+              className="w-full rounded-lg bg-emerald-600 px-4 py-2.5 text-sm text-white hover:bg-emerald-500 disabled:opacity-50 min-[420px]:w-auto"
             >
               {loading ? "Saving…" : "Save"}
             </button>

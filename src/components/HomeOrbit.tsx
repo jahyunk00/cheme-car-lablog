@@ -60,7 +60,7 @@ export function HomeOrbit({ isAuthed, userName }: { isAuthed: boolean; userName:
   return (
     <div className="relative min-h-screen bg-lab-bg">
       <DottedSurface />
-      <header className="fixed inset-x-0 top-0 z-50 flex items-center justify-between border-b border-lab-border/80 bg-lab-bg/75 px-4 py-3 backdrop-blur-md">
+      <header className="fixed inset-x-0 top-0 z-50 flex items-center justify-between border-b border-lab-border/80 bg-lab-bg/75 px-3 py-3 pt-[max(0.75rem,env(safe-area-inset-top,0px))] backdrop-blur-md sm:px-4">
         <NextLink href="/" className="text-lg font-semibold tracking-tight text-foreground hover:text-primary">
           LabLog
         </NextLink>

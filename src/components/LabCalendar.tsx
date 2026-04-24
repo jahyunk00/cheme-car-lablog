@@ -97,7 +97,7 @@ export function LabCalendar({
   );
 
   return (
-    <div className="lab-calendar rounded-xl border border-lab-border bg-lab-surface p-3">
+    <div className="lab-calendar min-w-0 overflow-x-auto rounded-xl border border-lab-border bg-lab-surface p-2 sm:p-3">
       <style jsx global>{`
         .lab-calendar .fc {
           --fc-border-color: #2d3a4d;
@@ -113,6 +113,28 @@ export function LabCalendar({
         .lab-calendar .fc .fc-toolbar-title {
           color: #f8fafc;
           font-size: 1.1rem;
+        }
+        .lab-calendar .fc .fc-toolbar {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 0.5rem;
+        }
+        .lab-calendar .fc .fc-toolbar-chunk {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: 0.35rem;
+        }
+        @media (min-width: 640px) {
+          .lab-calendar .fc .fc-toolbar {
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+          }
+          .lab-calendar .fc .fc-toolbar-chunk {
+            flex-wrap: nowrap;
+            justify-content: flex-start;
+          }
         }
         .lab-calendar .fc-daygrid-day.has-logs .fc-daygrid-day-number {
           color: #60a5fa;

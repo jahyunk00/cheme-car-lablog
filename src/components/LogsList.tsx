@@ -33,10 +33,10 @@ export function LogsList({
         {logs.map((log) => {
           const canEdit = log.userId === currentUserId || role === "admin";
           return (
-            <li key={log.id} className="rounded-lg border border-border bg-card/60 p-4">
-              <div className="flex justify-between gap-2">
-                <div>
-                    <p className="font-medium text-foreground">{log.title}</p>
+            <li key={log.id} className="rounded-lg border border-border bg-card/60 p-3 sm:p-4">
+              <div className="flex min-w-0 justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                    <p className="break-words font-medium text-foreground">{log.title}</p>
                     <p className="mt-1 text-xs text-muted-foreground">
                       <span className="rounded border border-border bg-muted px-1.5 py-0.5 font-medium text-foreground">
                         {log.category}

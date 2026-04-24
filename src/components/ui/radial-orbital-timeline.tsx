@@ -3,6 +3,14 @@
 import { ArrowRight, Link2, Zap, type LucideIcon } from "lucide-react";
 import NextLink from "next/link";
 import { type CSSProperties, type MouseEvent, useEffect, useRef, useState } from "react";
+
+function orbitRadiusForWidth(width: number) {
+  if (width < 360) return 88;
+  if (width < 420) return 105;
+  if (width < 520) return 130;
+  if (width < 640) return 155;
+  return 200;
+}
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,9 +38,17 @@ export function RadialOrbitalTimeline({ timelineData }: RadialOrbitalTimelinePro
   const [autoRotate, setAutoRotate] = useState(true);
   const [pulseEffect, setPulseEffect] = useState<Record<number, boolean>>({});
   const [activeNodeId, setActiveNodeId] = useState<number | null>(null);
+  const [orbitRadius, setOrbitRadius] = useState(200);
   const containerRef = useRef<HTMLDivElement>(null);
   const orbitRef = useRef<HTMLDivElement>(null);
   const nodeRefs = useRef<Record<number, HTMLDivElement | null>>({});
+
+  useEffect(() => {
+    const update = () => setOrbitRadius(orbitRadiusForWidth(window.innerWidth));
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
 
   const centerOffset = { x: 0, y: 0 };
 
@@ -108,7 +124,7 @@ export function RadialOrbitalTimeline({ timelineData }: RadialOrbitalTimelinePro
 
   const calculateNodePosition = (index: number, total: number) => {
     const angle = ((index / total) * 360 + rotationAngle) % 360;
-    const radius = 200;
+    const radius = orbitRadius;
     const radian = (angle * Math.PI) / 180;
 
     const x = radius * Math.cos(radian) + centerOffset.x;
@@ -146,11 +162,11 @@ export function RadialOrbitalTimeline({ timelineData }: RadialOrbitalTimelinePro
 
   return (
     <div
-      className="flex h-[min(100dvh,900px)] w-full flex-col items-center justify-center overflow-hidden bg-lab-bg pt-20 pb-8"
+      className="flex h-[min(100dvh,900px)] w-full flex-col items-center justify-center overflow-hidden bg-lab-bg pb-8 pt-[calc(4.5rem+env(safe-area-inset-top,0px))] sm:pt-20"
       ref={containerRef}
       onClick={handleContainerClick}
     >
-      <div className="relative flex h-full w-full max-w-4xl items-center justify-center">
+      <div className="relative flex h-full w-full max-w-4xl items-center justify-center px-2 sm:px-4">
         <div
           className="absolute flex h-full w-full items-center justify-center"
           ref={orbitRef}
@@ -168,7 +184,7 @@ export function RadialOrbitalTimeline({ timelineData }: RadialOrbitalTimelinePro
             <div className="h-8 w-8 rounded-full bg-white/80 backdrop-blur-md" />
           </div>
 
-          <div className="absolute h-96 w-96 rounded-full border border-slate-600/30" />
+          <div className="absolute aspect-square w-[min(22rem,calc(100vw-2rem))] rounded-full border border-slate-600/30 md:w-96" />
 
           {timelineData.map((item, index) => {
             const position = calculateNodePosition(index, timelineData.length);
@@ -231,7 +247,7 @@ export function RadialOrbitalTimeline({ timelineData }: RadialOrbitalTimelinePro
                 </div>
 
                 {isExpanded ? (
-                  <Card className="absolute left-1/2 top-20 z-[220] w-64 -translate-x-1/2 overflow-visible border-slate-600/50 bg-lab-surface/95 shadow-xl shadow-blue-900/20 backdrop-blur-lg">
+                  <Card className="absolute left-1/2 top-20 z-[220] w-[min(16rem,calc(100vw-2rem))] max-w-[calc(100vw-2rem)] -translate-x-1/2 overflow-visible border-slate-600/50 bg-lab-surface/95 shadow-xl shadow-blue-900/20 backdrop-blur-lg sm:w-64 sm:max-w-none">
                     <div className="absolute -top-3 left-1/2 h-3 w-px -translate-x-1/2 bg-slate-500/60" />
                     <CardHeader className="pb-2">
                       <div className="flex items-center justify-between">
