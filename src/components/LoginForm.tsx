@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
@@ -76,9 +77,9 @@ export function LoginForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
-      <div className="space-y-1">
-        <label className="text-sm text-slate-300" htmlFor="email">
+    <form onSubmit={onSubmit} className="space-y-5">
+      <div className="space-y-1.5">
+        <label className="field-label" htmlFor="email">
           Email
         </label>
         <input
@@ -91,8 +92,8 @@ export function LoginForm() {
           className="w-full"
         />
       </div>
-      <div className="space-y-1">
-        <label className="text-sm text-slate-300" htmlFor="password">
+      <div className="space-y-1.5">
+        <label className="field-label" htmlFor="password">
           Password
         </label>
         <input
@@ -105,14 +106,18 @@ export function LoginForm() {
           className="w-full"
         />
       </div>
-      {error ? <p className="text-sm text-red-400">{error}</p> : null}
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white"
-      >
+      {error ? (
+        <p className="text-sm text-red-400 rounded-lg bg-red-950/30 border border-red-900/40 px-3 py-2">{error}</p>
+      ) : null}
+      <button type="submit" disabled={loading} className="btn-primary w-full">
         {loading ? "Signing in…" : "Sign in"}
       </button>
+      <p className="text-center text-sm text-slate-500">
+        New to LabLog?{" "}
+        <Link href="/register" className="text-blue-400 hover:text-blue-300 font-medium">
+          Create an account
+        </Link>
+      </p>
     </form>
   );
 }

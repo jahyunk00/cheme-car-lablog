@@ -150,6 +150,25 @@ export async function upsertUser(user: User) {
   if (error) throw new Error(error.message);
 }
 
+/** Insert a new user (registration). Fails if email already exists. */
+export async function insertUser(user: User) {
+  const email = user.email.trim().toLowerCase();
+  const { error } = await admin().from("lablog_users").insert({
+    id: user.id,
+    name: user.name.trim(),
+    email,
+    role: user.role,
+    password_hash: user.passwordHash,
+  });
+  if (error) {
+    const code = (error as { code?: string }).code;
+    if (code === "23505" || /duplicate|unique/i.test(error.message)) {
+      throw new Error("EMAIL_TAKEN");
+    }
+    throw new Error(error.message);
+  }
+}
+
 export async function saveLog(
   log: LogEntry,
   feedItem: Omit<FeedItem, "id" | "createdAt"> & { id?: string }

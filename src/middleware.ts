@@ -3,7 +3,12 @@ import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 import { updateSession } from "@/utils/supabase/middleware";
 
-const PUBLIC_PATHS = ["/login", "/api/auth/login"];
+function isPublicPath(pathname: string) {
+  if (pathname === "/login" || pathname === "/register") return true;
+  if (pathname.startsWith("/login/") || pathname.startsWith("/register/")) return true;
+  if (pathname === "/api/auth/login" || pathname === "/api/auth/register") return true;
+  return false;
+}
 
 function secretKey() {
   const fromEnv = process.env.LABLOG_SECRET;
@@ -30,7 +35,7 @@ export async function middleware(request: NextRequest) {
 
   const supabaseResponse = await updateSession(request);
 
-  if (PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
+  if (isPublicPath(pathname)) {
     return supabaseResponse;
   }
 

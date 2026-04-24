@@ -1,11 +1,5 @@
 import Link from "next/link";
-
-const links = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/calendar", label: "Calendar" },
-  { href: "/logs", label: "Logs" },
-  { href: "/weekly-summary", label: "Weekly summary" },
-];
+import { AppNav } from "@/components/AppNav";
 
 export function AppShell({
   userName,
@@ -24,17 +18,7 @@ export function AppShell({
             <Link href="/dashboard" className="text-lg font-semibold text-white tracking-tight">
               LabLog
             </Link>
-            <nav className="flex flex-wrap gap-1 text-sm">
-              {links.map((l) => (
-                <Link
-                  key={l.href}
-                  href={l.href}
-                  className="px-3 py-1.5 rounded-md text-slate-300 hover:bg-lab-border/60 hover:text-white"
-                >
-                  {l.label}
-                </Link>
-              ))}
-            </nav>
+            <AppNav />
           </div>
           <div className="flex items-center gap-3 text-sm text-slate-400">
             <span>
@@ -43,10 +27,7 @@ export function AppShell({
               <span className="capitalize">{role}</span>
             </span>
             <form action="/api/auth/logout" method="post">
-              <button
-                type="submit"
-                className="px-3 py-1.5 text-slate-300 border border-lab-border hover:bg-lab-border/50"
-              >
+              <button type="submit" className="btn-ghost text-sm">
                 Log out
               </button>
             </form>
