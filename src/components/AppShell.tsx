@@ -15,7 +15,7 @@ export function AppShell({
       <header className="border-b border-lab-border bg-lab-surface/80 backdrop-blur sticky top-0 z-20">
         <div className="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-6">
-            <Link href="/dashboard" className="text-lg font-semibold text-white tracking-tight">
+            <Link href="/" className="text-lg font-semibold text-white tracking-tight hover:text-blue-200">
               LabLog
             </Link>
             <AppNav />

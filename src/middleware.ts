@@ -4,7 +4,7 @@ import { jwtVerify } from "jose";
 import { updateSession } from "@/utils/supabase/middleware";
 
 function isPublicPath(pathname: string) {
-  if (pathname === "/login" || pathname === "/register") return true;
+  if (pathname === "/" || pathname === "/login" || pathname === "/register") return true;
   if (pathname.startsWith("/login/") || pathname.startsWith("/register/")) return true;
   if (pathname === "/api/auth/login" || pathname === "/api/auth/register") return true;
   return false;
