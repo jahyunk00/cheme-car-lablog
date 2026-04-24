@@ -1,103 +1,200 @@
-import { mkdir, readFile, writeFile } from "fs/promises";
-import { dirname, join } from "path";
-import type { FeedItem, LogEntry, Store, User } from "./types";
+import type { FeedItem, LogEntry, User, UserRole } from "./types";
+import { createAdminClient } from "@/utils/supabase/admin";
 
-const DATA_DIR = join(process.cwd(), "data");
-const STORE_PATH = join(DATA_DIR, "store.json");
-
-let memoryStore: Store | null = null;
-
-function defaultStore(): Store {
-  return { users: [], logs: [], feed: [] };
+function admin() {
+  return createAdminClient();
 }
 
-async function ensureDir() {
-  await mkdir(DATA_DIR, { recursive: true });
+function mapUser(row: {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  password_hash: string;
+}): User {
+  const role: UserRole = row.role === "admin" ? "admin" : "member";
+  return {
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    role,
+    passwordHash: row.password_hash,
+  };
 }
 
-export async function readStore(): Promise<Store> {
-  if (memoryStore) return memoryStore;
-  try {
-    const raw = await readFile(STORE_PATH, "utf-8");
-    memoryStore = JSON.parse(raw) as Store;
-    return memoryStore;
-  } catch {
-    memoryStore = defaultStore();
-    return memoryStore;
-  }
+function mapLog(row: {
+  id: string;
+  user_id: string;
+  log_date: string;
+  title: string;
+  description: string;
+  tags: string[] | null;
+  hours: string | number | null;
+  created_at: string;
+  updated_at: string;
+}): LogEntry {
+  const hours =
+    row.hours === null || row.hours === undefined || row.hours === ""
+      ? null
+      : Number(row.hours);
+  return {
+    id: row.id,
+    userId: row.user_id,
+    date: row.log_date.slice(0, 10),
+    title: row.title,
+    description: row.description ?? "",
+    tags: row.tags ?? [],
+    hours: Number.isFinite(hours) ? hours : null,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
 }
 
-export async function writeStore(store: Store) {
-  memoryStore = store;
-  await ensureDir();
-  await writeFile(STORE_PATH, JSON.stringify(store, null, 2), "utf-8");
+function mapFeed(row: {
+  id: string;
+  type: string;
+  user_id: string;
+  log_id: string;
+  message: string;
+  created_at: string;
+}): FeedItem {
+  const type = row.type === "log_updated" ? "log_updated" : "log_created";
+  return {
+    id: row.id,
+    type,
+    userId: row.user_id,
+    logId: row.log_id,
+    message: row.message,
+    createdAt: row.created_at,
+  };
+}
+
+export async function countUsers(): Promise<number> {
+  const { count, error } = await admin()
+    .from("lablog_users")
+    .select("*", { count: "exact", head: true });
+  if (error) throw new Error(error.message);
+  return count ?? 0;
 }
 
 export async function getUserByEmail(email: string): Promise<User | undefined> {
-  const s = await readStore();
-  return s.users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+  const normalized = email.trim().toLowerCase();
+  const { data, error } = await admin()
+    .from("lablog_users")
+    .select("*")
+    .eq("email", normalized)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) return undefined;
+  return mapUser(data as Parameters<typeof mapUser>[0]);
 }
 
 export async function getUserById(id: string): Promise<User | undefined> {
-  const s = await readStore();
-  return s.users.find((u) => u.id === id);
+  const { data, error } = await admin().from("lablog_users").select("*").eq("id", id).maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) return undefined;
+  return mapUser(data as Parameters<typeof mapUser>[0]);
+}
+
+export async function listDirectoryUsers(): Promise<
+  { id: string; name: string; email: string; role: UserRole }[]
+> {
+  const { data, error } = await admin().from("lablog_users").select("id, name, email, role");
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((row) => ({
+    id: row.id as string,
+    name: row.name as string,
+    email: row.email as string,
+    role: row.role === "admin" ? "admin" : "member",
+  }));
 }
 
 export async function listLogsForUser(userId: string): Promise<LogEntry[]> {
-  const s = await readStore();
-  return s.logs.filter((l) => l.userId === userId);
+  const { data, error } = await admin()
+    .from("lablog_logs")
+    .select("*")
+    .eq("user_id", userId)
+    .order("log_date", { ascending: false });
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((r) => mapLog(r as Parameters<typeof mapLog>[0]));
 }
 
 export async function listAllLogs(): Promise<LogEntry[]> {
-  const s = await readStore();
-  return [...s.logs].sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-  );
+  const { data, error } = await admin()
+    .from("lablog_logs")
+    .select("*")
+    .order("log_date", { ascending: false })
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((r) => mapLog(r as Parameters<typeof mapLog>[0]));
 }
 
 export async function getLog(id: string): Promise<LogEntry | undefined> {
-  const s = await readStore();
-  return s.logs.find((l) => l.id === id);
+  const { data, error } = await admin().from("lablog_logs").select("*").eq("id", id).maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) return undefined;
+  return mapLog(data as Parameters<typeof mapLog>[0]);
 }
 
 export async function upsertUser(user: User) {
-  const s = await readStore();
-  const idx = s.users.findIndex((u) => u.id === user.id);
-  if (idx >= 0) s.users[idx] = user;
-  else s.users.push(user);
-  await writeStore(s);
+  const { error } = await admin().from("lablog_users").upsert(
+    {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      password_hash: user.passwordHash,
+    },
+    { onConflict: "id" }
+  );
+  if (error) throw new Error(error.message);
 }
 
 export async function saveLog(
   log: LogEntry,
   feedItem: Omit<FeedItem, "id" | "createdAt"> & { id?: string }
 ) {
-  const s = await readStore();
-  const idx = s.logs.findIndex((l) => l.id === log.id);
-  if (idx >= 0) s.logs[idx] = log;
-  else s.logs.push(log);
+  const client = admin();
+  const { error: logErr } = await client.from("lablog_logs").upsert(
+    {
+      id: log.id,
+      user_id: log.userId,
+      log_date: log.date,
+      title: log.title,
+      description: log.description,
+      tags: log.tags,
+      hours: log.hours,
+      created_at: log.createdAt,
+      updated_at: log.updatedAt,
+    },
+    { onConflict: "id" }
+  );
+  if (logErr) throw new Error(logErr.message);
 
-  const item: FeedItem = {
-    id: feedItem.id ?? crypto.randomUUID(),
+  const feedId = feedItem.id ?? crypto.randomUUID();
+  const createdAt = new Date().toISOString();
+  const { error: feedErr } = await client.from("lablog_feed").insert({
+    id: feedId,
     type: feedItem.type,
-    userId: feedItem.userId,
-    logId: feedItem.logId,
+    user_id: feedItem.userId,
+    log_id: feedItem.logId,
     message: feedItem.message,
-    createdAt: new Date().toISOString(),
-  };
-  s.feed.unshift(item);
-  s.feed = s.feed.slice(0, 100);
-
-  await writeStore(s);
+    created_at: createdAt,
+  });
+  if (feedErr) throw new Error(feedErr.message);
 }
 
 export async function deleteLog(id: string) {
-  const s = await readStore();
-  s.logs = s.logs.filter((l) => l.id !== id);
-  await writeStore(s);
+  const { error } = await admin().from("lablog_logs").delete().eq("id", id);
+  if (error) throw new Error(error.message);
 }
 
 export async function listFeed(limit = 30): Promise<FeedItem[]> {
-  const s = await readStore();
-  return s.feed.slice(0, limit);
+  const { data, error } = await admin()
+    .from("lablog_feed")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((r) => mapFeed(r as Parameters<typeof mapFeed>[0]));
 }

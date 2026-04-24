@@ -1,11 +1,10 @@
 import { hashPassword } from "./auth";
-import { readStore, upsertUser } from "./db";
+import { countUsers, upsertUser } from "./db";
 import type { User } from "./types";
 
 /** Demo accounts for local MVP; change passwords in production. */
 export async function ensureSeedUsers() {
-  const store = await readStore();
-  if (store.users.length > 0) return;
+  if ((await countUsers()) > 0) return;
 
   const admin: User = {
     id: "user_admin",

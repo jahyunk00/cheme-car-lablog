@@ -20,12 +20,6 @@ export type LogEntry = {
   updatedAt: string;
 };
 
-export type Store = {
-  users: User[];
-  logs: LogEntry[];
-  feed: FeedItem[];
-};
-
 export type FeedItem = {
   id: string;
   type: "log_created" | "log_updated";

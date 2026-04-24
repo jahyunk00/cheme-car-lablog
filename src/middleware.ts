@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
+import { updateSession } from "@/utils/supabase/middleware";
 
 const PUBLIC_PATHS = ["/login", "/api/auth/login"];
 
@@ -13,6 +14,13 @@ function secretKey() {
   return null;
 }
 
+/** Preserve Supabase session cookies when issuing a LabLog redirect. */
+function mergeSupabaseCookies(from: NextResponse, to: NextResponse) {
+  from.cookies.getAll().forEach((c) => {
+    to.cookies.set(c.name, c.value);
+  });
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -20,12 +28,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  const supabaseResponse = await updateSession(request);
+
   if (PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
-    return NextResponse.next();
+    return supabaseResponse;
   }
 
   if (pathname.startsWith("/api/auth/logout")) {
-    return NextResponse.next();
+    return supabaseResponse;
   }
 
   const token = request.cookies.get("lablog_session")?.value;
@@ -38,19 +48,23 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("from", pathname);
-    return NextResponse.redirect(url);
+    const redirect = NextResponse.redirect(url);
+    mergeSupabaseCookies(supabaseResponse, redirect);
+    return redirect;
   }
 
   try {
     await jwtVerify(token, key);
-    return NextResponse.next();
+    return supabaseResponse;
   } catch {
     if (pathname.startsWith("/api/")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const url = request.nextUrl.clone();
     url.pathname = "/login";
-    return NextResponse.redirect(url);
+    const redirect = NextResponse.redirect(url);
+    mergeSupabaseCookies(supabaseResponse, redirect);
+    return redirect;
   }
 }
 

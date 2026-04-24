@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { listAllLogs, readStore } from "@/lib/db";
+import { listAllLogs, listDirectoryUsers } from "@/lib/db";
 import { LogsExplorer, type LogRow } from "@/components/LogsExplorer";
 import { getSession } from "@/lib/session";
 
@@ -13,8 +13,8 @@ export default async function LogsPage({ searchParams }: Props) {
   const initialDate =
     sp?.date && /^\d{4}-\d{2}-\d{2}$/.test(sp.date) ? sp.date : format(new Date(), "yyyy-MM-dd");
 
-  const store = await readStore();
-  const nameById = Object.fromEntries(store.users.map((u) => [u.id, u.name]));
+  const directory = await listDirectoryUsers();
+  const nameById = Object.fromEntries(directory.map((u) => [u.id, u.name]));
 
   const logs: LogRow[] = (await listAllLogs()).map((l) => ({
     id: l.id,
@@ -28,7 +28,7 @@ export default async function LogsPage({ searchParams }: Props) {
     createdAt: l.createdAt,
   }));
 
-  const users = store.users.map((u) => ({ id: u.id, name: u.name }));
+  const users = directory.map((u) => ({ id: u.id, name: u.name }));
 
   return (
     <div className="space-y-6">

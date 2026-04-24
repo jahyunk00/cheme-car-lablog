@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getLog, readStore, saveLog, writeStore } from "@/lib/db";
+import { deleteLog, getLog, saveLog } from "@/lib/db";
 import { getSession } from "@/lib/session";
 
 const patchSchema = z.object({
@@ -61,9 +61,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const store = await readStore();
-  store.logs = store.logs.filter((l) => l.id !== id);
-  await writeStore(store);
+  await deleteLog(id);
 
   return NextResponse.json({ ok: true });
 }
