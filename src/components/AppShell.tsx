@@ -22,6 +22,7 @@ function buildNavLinks(role: UserRole): AppNavLink[] {
     core.push({ href: "/weekly-summary", label: "Weekly summary" });
   }
   if (isAdmin(role)) {
+    core.push({ href: "/admin/week-report", label: "Week report" });
     core.push({ href: "/admin/roles", label: "Team roles" });
   }
   return core;
