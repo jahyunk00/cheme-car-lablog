@@ -68,12 +68,18 @@ export async function POST(request: Request) {
     updatedAt: now,
   };
 
-  await saveLog(log, {
-    type: "log_created",
-    userId: session.sub,
-    logId: id,
-    message: `${session.name} logged “${log.title}”`,
-  });
+  try {
+    await saveLog(log, {
+      type: "log_created",
+      userId: session.sub,
+      logId: id,
+      message: `${session.name} logged “${log.title}”`,
+    });
+  } catch (err) {
+    console.error("[api/logs POST]", err);
+    const message = err instanceof Error ? err.message : "Could not save to database.";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 
   return NextResponse.json({ log });
 }

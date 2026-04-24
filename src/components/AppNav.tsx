@@ -7,7 +7,6 @@ const links = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/calendar", label: "Calendar" },
   { href: "/logs", label: "Logs" },
-  { href: "/logs/upload", label: "Upload log" },
   { href: "/weekly-summary", label: "Weekly summary" },
 ];
 
@@ -18,9 +17,7 @@ export function AppNav() {
     <nav className="flex w-max max-w-full flex-nowrap gap-1 text-xs sm:w-auto sm:flex-wrap sm:text-sm">
       {links.map((l) => {
         const active =
-          l.href === "/logs"
-            ? pathname === "/logs"
-            : pathname === l.href || pathname.startsWith(`${l.href}/`);
+          pathname === l.href || (l.href !== "/" && pathname.startsWith(`${l.href}/`));
         return (
           <Link
             key={l.href}

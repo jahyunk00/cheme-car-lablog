@@ -73,11 +73,15 @@ export function LogsList({
         </p>
       ) : null}
       <p className="mt-6 text-xs text-muted-foreground">
-        Add new logs from the{" "}
+        Add new logs under{" "}
+        <Link href="/logs" className="text-primary hover:underline">
+          Logs
+        </Link>{" "}
+        →{" "}
         <Link href="/logs/upload" className="text-primary hover:underline">
           Upload log
-        </Link>{" "}
-        tab. Open the{" "}
+        </Link>
+        . Open the{" "}
         <Link href="/calendar" className="text-primary hover:underline">
           calendar
         </Link>{" "}

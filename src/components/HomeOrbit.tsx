@@ -34,7 +34,7 @@ const NAV_ORBIT: OrbitalTimelineItem[] = [
     id: 3,
     title: "Logs",
     date: "Records",
-    content: "Browse the team log and edit your entries from the list. Add new logs only from the Upload log tab.",
+    content: "Browse the team log and edit your entries from the list. Use Logs → Upload log to add entries.",
     category: "Work",
     icon: FileText,
     relatedIds: [2, 4],

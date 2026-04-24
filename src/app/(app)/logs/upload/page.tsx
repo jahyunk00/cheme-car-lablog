@@ -1,5 +1,4 @@
 import { format } from "date-fns";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LogForm, type LogPayload } from "@/components/LogForm";
 import { getLog } from "@/lib/db";
@@ -50,21 +49,13 @@ export default async function LogUploadPage({ searchParams }: Props) {
 
   return (
     <div className="mx-auto min-w-0 max-w-2xl space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="min-w-0">
-          <h1 className="text-2xl font-semibold text-foreground">
-            {initial.id ? "Edit log" : "Upload log"}
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {initial.id ? "Update this entry, then save." : "Add a dated lab entry for your team."}
-          </p>
-        </div>
-        <Link
-          href="/logs"
-          className="text-sm text-primary underline-offset-2 hover:underline"
-        >
-          View all logs
-        </Link>
+      <div className="min-w-0">
+        <h1 className="text-2xl font-semibold text-foreground">
+          {initial.id ? "Edit log" : "Upload log"}
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {initial.id ? "Update this entry, then save." : "Add a dated lab entry for your team."}
+        </p>
       </div>
       <LogForm key={formKey} initial={initial} isAdmin={session.role === "admin"} />
     </div>

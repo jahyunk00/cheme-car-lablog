@@ -40,12 +40,18 @@ export async function PATCH(request: Request, context: RouteContext) {
     updatedAt: new Date().toISOString(),
   };
 
-  await saveLog(next, {
-    type: "log_updated",
-    userId: session.sub,
-    logId: id,
-    message: `${session.name} updated “${next.title}”`,
-  });
+  try {
+    await saveLog(next, {
+      type: "log_updated",
+      userId: session.sub,
+      logId: id,
+      message: `${session.name} updated “${next.title}”`,
+    });
+  } catch (err) {
+    console.error("[api/logs PATCH]", err);
+    const message = err instanceof Error ? err.message : "Could not save to database.";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 
   return NextResponse.json({ log: next });
 }

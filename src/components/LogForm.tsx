@@ -57,14 +57,40 @@ export function LogForm({
 
       const isEdit = Boolean(initial.id);
       const body = { date, category, title, description, hours: hoursNum };
-      const res = await fetch(isEdit ? `/api/logs/${initial.id}` : "/api/logs", {
-        method: isEdit ? "PATCH" : "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      const data = await res.json().catch(() => ({}));
+      let res: Response;
+      try {
+        res = await fetch(isEdit ? `/api/logs/${initial.id}` : "/api/logs", {
+          method: isEdit ? "PATCH" : "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify(body),
+        });
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Network error — check your connection and try again.");
+        return;
+      }
+
+      const raw = await res.text();
+      let data: { error?: string; details?: unknown } = {};
+      try {
+        data = raw ? (JSON.parse(raw) as typeof data) : {};
+      } catch {
+        setError(res.ok ? "Could not read server response." : raw.slice(0, 200) || `Request failed (${res.status}).`);
+        return;
+      }
+
       if (!res.ok) {
-        setError(typeof data.error === "string" ? data.error : "Could not save log");
+        if (typeof data.error === "string") {
+          if (data.error === "Invalid body") {
+            setError(
+              "Some fields were rejected — check the date, title, hours (0 or more), and subsystem, then try again."
+            );
+          } else {
+            setError(data.error);
+          }
+        } else {
+          setError(`Could not save log (${res.status}).`);
+        }
         return;
       }
       onDone?.();
