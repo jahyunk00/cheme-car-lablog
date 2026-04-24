@@ -18,37 +18,26 @@ export type LogRow = {
 
 export function LogsExplorer({
   logs,
-  users,
   initialDate,
   currentUserId,
   role,
 }: {
   logs: LogRow[];
-  users: { id: string; name: string }[];
   initialDate: string;
   currentUserId: string;
   role: string;
 }) {
-  const [q, setQ] = useState("");
-  const [userId, setUserId] = useState("");
-  const [tag, setTag] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [editing, setEditing] = useState<LogRow | null>(null);
 
   const filtered = useMemo(() => {
-    const qq = q.toLowerCase();
     return logs.filter((l) => {
-      if (qq && !(`${l.title} ${l.description} ${l.tags.join(" ")}`).toLowerCase().includes(qq)) {
-        return false;
-      }
-      if (userId && l.userId !== userId) return false;
-      if (tag && !l.tags.some((t) => t.toLowerCase() === tag.toLowerCase())) return false;
       if (from && l.date < from) return false;
       if (to && l.date > to) return false;
       return true;
     });
-  }, [logs, q, userId, tag, from, to]);
+  }, [logs, from, to]);
 
   const initialForm: LogPayload = editing
     ? {
@@ -81,31 +70,12 @@ export function LogsExplorer({
           </button>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
-          <div className="space-y-1 sm:col-span-2">
-            <label className="text-sm text-slate-300">Keyword</label>
-            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search title, body, tags" className="w-full" />
-          </div>
           <div className="space-y-1">
-            <label className="text-sm text-slate-300">Member</label>
-            <select value={userId} onChange={(e) => setUserId(e.target.value)} className="w-full">
-              <option value="">All members</option>
-              {users.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="space-y-1">
-            <label className="text-sm text-slate-300">Tag</label>
-            <input value={tag} onChange={(e) => setTag(e.target.value)} placeholder="exact tag" className="w-full" />
-          </div>
-          <div className="space-y-1">
-            <label className="text-sm text-slate-300">From</label>
+            <label className="field-label">From</label>
             <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="w-full" />
           </div>
           <div className="space-y-1">
-            <label className="text-sm text-slate-300">To</label>
+            <label className="field-label">To</label>
             <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="w-full" />
           </div>
         </div>

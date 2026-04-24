@@ -28,19 +28,16 @@ export default async function LogsPage({ searchParams }: Props) {
     createdAt: l.createdAt,
   }));
 
-  const users = directory.map((u) => ({ id: u.id, name: u.name }));
-
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold text-white">Logs</h1>
         <p className="text-slate-400 mt-1 text-sm">
-          Create and edit entries, filter by teammate, tag, or date range.
+          Create and edit entries, and narrow the list with a date range.
         </p>
       </div>
       <LogsExplorer
         logs={logs}
-        users={users}
         initialDate={initialDate}
         currentUserId={session.sub}
         role={session.role}
