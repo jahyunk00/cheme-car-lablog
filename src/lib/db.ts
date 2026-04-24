@@ -1,4 +1,5 @@
 import type { CalendarEventEntry, FeedItem, LogEntry, User, UserRole } from "./types";
+import { parseLogCategory } from "./log-categories";
 import { createAdminClient } from "@/utils/supabase/admin";
 
 function admin() {
@@ -30,6 +31,7 @@ function mapLog(row: {
   description: string;
   tags: string[] | null;
   hours: string | number | null;
+  category?: string | null;
   created_at: string;
   updated_at: string;
 }): LogEntry {
@@ -45,6 +47,7 @@ function mapLog(row: {
     description: row.description ?? "",
     tags: row.tags ?? [],
     hours: Number.isFinite(hours) ? hours : null,
+    category: parseLogCategory(row.category ?? undefined),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -183,6 +186,7 @@ export async function saveLog(
       description: log.description,
       tags: log.tags,
       hours: log.hours,
+      category: log.category,
       created_at: log.createdAt,
       updated_at: log.updatedAt,
     },

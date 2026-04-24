@@ -70,7 +70,11 @@ export default async function DashboardPage() {
                     className="rounded-lg border border-lab-border bg-lab-bg/40 px-4 py-3"
                   >
                     <p className="font-medium text-white">{log.title}</p>
-                    <p className="text-xs text-slate-500 mt-1">
+                    <p className="mt-1 text-xs text-slate-500">
+                      <span className="rounded border border-border bg-muted/40 px-1.5 py-0.5 text-slate-200">
+                        {log.category}
+                      </span>
+                      <span className="mx-1.5">·</span>
                       {(await nameFor(log.userId))}
                       {log.tags.length ? ` · ${log.tags.join(", ")}` : ""}
                     </p>

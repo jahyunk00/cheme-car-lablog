@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import type { LogCategory } from "@/lib/log-categories";
+
 export type LogRow = {
   id: string;
   userId: string;
@@ -9,6 +11,7 @@ export type LogRow = {
   description: string;
   tags: string[];
   hours: number | null;
+  category: LogCategory;
   createdAt: string;
 };
 
@@ -30,9 +33,13 @@ export function LogsList({
             <li key={log.id} className="rounded-lg border border-border bg-card/60 p-4">
               <div className="flex justify-between gap-2">
                 <div>
-                  <p className="font-medium text-foreground">{log.title}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {log.date} · {log.userName}
+                    <p className="font-medium text-foreground">{log.title}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      <span className="rounded border border-border bg-muted px-1.5 py-0.5 font-medium text-foreground">
+                        {log.category}
+                      </span>
+                      <span className="mx-1.5">·</span>
+                      {log.date} · {log.userName}
                     {log.hours != null ? ` · ${log.hours}h` : ""}
                   </p>
                   {log.tags.length ? (

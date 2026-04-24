@@ -20,6 +20,7 @@ export default async function CalendarPage() {
     userName: nameById[l.userId] ?? l.userId,
     description: l.description,
     tags: l.tags,
+    category: l.category,
   }));
 
   return (

@@ -31,6 +31,7 @@ export default async function LogUploadPage({ searchParams }: Props) {
     initial = {
       id: log.id,
       date: log.date,
+      category: log.category,
       title: log.title,
       description: log.description,
       tags: log.tags.join(", "),
@@ -40,6 +41,7 @@ export default async function LogUploadPage({ searchParams }: Props) {
   } else {
     initial = {
       date: dateParam,
+      category: "Other",
       title: "",
       description: "",
       tags: "",

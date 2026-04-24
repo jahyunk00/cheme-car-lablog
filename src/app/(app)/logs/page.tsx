@@ -19,6 +19,7 @@ export default async function LogsPage() {
     description: l.description,
     tags: l.tags,
     hours: l.hours,
+    category: l.category,
     createdAt: l.createdAt,
   }));
 

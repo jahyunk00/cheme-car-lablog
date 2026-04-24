@@ -2,10 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { LOG_CATEGORIES, type LogCategory } from "@/lib/log-categories";
 
 export type LogPayload = {
   id?: string;
   date: string;
+  category: LogCategory;
   title: string;
   description: string;
   tags: string;
@@ -21,6 +23,7 @@ export function LogForm({
 }) {
   const router = useRouter();
   const [date, setDate] = useState(initial.date);
+  const [category, setCategory] = useState<LogCategory>(initial.category);
   const [title, setTitle] = useState(initial.title);
   const [description, setDescription] = useState(initial.description);
   const [tags, setTags] = useState(initial.tags);
@@ -45,6 +48,7 @@ export function LogForm({
 
       const body = {
         date,
+        category,
         title,
         description,
         tags: tagList,
@@ -89,6 +93,22 @@ export function LogForm({
             className="w-full"
           />
         </div>
+      </div>
+      <div className="space-y-1">
+        <label className="field-label">Log for</label>
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value as LogCategory)}
+          required
+          className="w-full"
+        >
+          {LOG_CATEGORIES.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+        <p className="text-xs text-muted-foreground">Which subsystem this entry is about.</p>
       </div>
       <div className="space-y-1">
         <label className="field-label">Title</label>

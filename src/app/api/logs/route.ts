@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { listAllLogs, saveLog } from "@/lib/db";
+import { LOG_CATEGORIES } from "@/lib/log-categories";
 import { getSession } from "@/lib/session";
 import type { LogEntry } from "@/lib/types";
 
@@ -10,6 +11,7 @@ const createSchema = z.object({
   description: z.string().max(5000).default(""),
   tags: z.array(z.string()).default([]),
   hours: z.number().min(0).max(999).nullable().optional(),
+  category: z.enum(LOG_CATEGORIES),
 });
 
 export async function GET(request: Request) {
@@ -61,6 +63,7 @@ export async function POST(request: Request) {
     description: parsed.data.description ?? "",
     tags: parsed.data.tags ?? [],
     hours: parsed.data.hours ?? null,
+    category: parsed.data.category,
     createdAt: now,
     updatedAt: now,
   };

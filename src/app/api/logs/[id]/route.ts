@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { deleteLog, getLog, saveLog } from "@/lib/db";
+import { LOG_CATEGORIES } from "@/lib/log-categories";
 import { getSession } from "@/lib/session";
 
 const patchSchema = z.object({
@@ -9,6 +10,7 @@ const patchSchema = z.object({
   description: z.string().max(5000).optional(),
   tags: z.array(z.string()).optional(),
   hours: z.number().min(0).max(999).nullable().optional(),
+  category: z.enum(LOG_CATEGORIES).optional(),
 });
 
 type RouteContext = { params: Promise<{ id: string }> };

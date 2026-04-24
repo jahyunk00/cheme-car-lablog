@@ -116,6 +116,7 @@ export function CalendarClient({
         userName: l.userName,
         description: l.description,
         tags: l.tags,
+        category: l.category,
       }));
   }, [logDetails, summaryDateStr]);
 

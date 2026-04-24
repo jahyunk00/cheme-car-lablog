@@ -113,6 +113,7 @@ export default async function WeeklySummaryPage({ searchParams }: Props) {
             .map((log) => (
               <li key={log.id} className="relative">
                 <span className="text-slate-500">{log.date}</span>{" "}
+                <span className="text-slate-400">[{log.category}]</span>{" "}
                 <span className="text-slate-200">{log.title}</span>
               </li>
             ))}

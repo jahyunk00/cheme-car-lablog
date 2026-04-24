@@ -8,6 +8,8 @@ export type User = {
   passwordHash: string;
 };
 
+import type { LogCategory } from "@/lib/log-categories";
+
 export type LogEntry = {
   id: string;
   userId: string;
@@ -16,6 +18,7 @@ export type LogEntry = {
   description: string;
   tags: string[];
   hours: number | null;
+  category: LogCategory;
   createdAt: string;
   updatedAt: string;
 };
