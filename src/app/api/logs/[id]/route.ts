@@ -58,9 +58,8 @@ export async function DELETE(_request: Request, context: RouteContext) {
   const existing = await getLog(id);
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const isAdmin = session.role === "admin";
-  if (existing.userId !== session.sub && !isAdmin) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (session.role !== "admin") {
+    return NextResponse.json({ error: "Only admins can delete logs." }, { status: 403 });
   }
 
   await deleteLog(id);

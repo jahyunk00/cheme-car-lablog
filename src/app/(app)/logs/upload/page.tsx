@@ -66,7 +66,7 @@ export default async function LogUploadPage({ searchParams }: Props) {
           View all logs
         </Link>
       </div>
-      <LogForm key={formKey} initial={initial} />
+      <LogForm key={formKey} initial={initial} isAdmin={session.role === "admin"} />
     </div>
   );
 }

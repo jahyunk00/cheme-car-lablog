@@ -27,9 +27,12 @@ export type LogPayload = {
 export function LogForm({
   initial,
   onDone,
+  isAdmin = false,
 }: {
   initial: LogPayload;
   onDone?: () => void;
+  /** When true, editing shows a Delete log control (API allows delete for admins only). */
+  isAdmin?: boolean;
 }) {
   const router = useRouter();
   const [date, setDate] = useState(initial.date);
@@ -39,6 +42,7 @@ export function LogForm({
   const [hours, setHours] = useState(initial.hours);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -69,6 +73,27 @@ export function LogForm({
       setLoading(false);
     }
   }
+
+  async function removeLog() {
+    if (!initial.id || !isAdmin) return;
+    if (!confirm("Permanently delete this log? This cannot be undone.")) return;
+    setError(null);
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/logs/${initial.id}`, { method: "DELETE" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(typeof data.error === "string" ? data.error : "Could not delete log");
+        return;
+      }
+      onDone?.();
+      router.push("/logs");
+    } finally {
+      setDeleting(false);
+    }
+  }
+
+  const showDelete = Boolean(isAdmin && initial.id);
 
   return (
     <form onSubmit={submit} className="space-y-4 rounded-xl border border-border bg-card p-5">
@@ -135,9 +160,21 @@ export function LogForm({
         />
       </div>
       {error ? <p className="text-sm text-red-400">{error}</p> : null}
-      <button type="submit" disabled={loading} className="btn-primary px-4 py-2">
-        {loading ? "Saving…" : "Save log"}
-      </button>
+      <div className="flex flex-wrap items-center gap-3">
+        <button type="submit" disabled={loading || deleting} className="btn-primary px-4 py-2">
+          {loading ? "Saving…" : "Save log"}
+        </button>
+        {showDelete ? (
+          <Button
+            type="button"
+            variant="destructive"
+            disabled={loading || deleting}
+            onClick={() => void removeLog()}
+          >
+            {deleting ? "Deleting…" : "Delete log"}
+          </Button>
+        ) : null}
+      </div>
     </form>
   );
 }

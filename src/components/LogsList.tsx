@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import type { LogCategory } from "@/lib/log-categories";
+import type { LogCategory, LogsCategoryFilterValue } from "@/lib/log-categories";
 
 export type LogRow = {
   id: string;
@@ -19,10 +19,13 @@ export function LogsList({
   logs,
   currentUserId,
   role,
+  categoryFilter = "all",
 }: {
   logs: LogRow[];
   currentUserId: string;
   role: string;
+  /** When not "all", empty list shows a category-specific message. */
+  categoryFilter?: LogsCategoryFilterValue;
 }) {
   return (
     <div className="space-y-4">
@@ -62,7 +65,13 @@ export function LogsList({
           );
         })}
       </ul>
-      {logs.length === 0 ? <p className="text-sm text-muted-foreground">No logs yet.</p> : null}
+      {logs.length === 0 ? (
+        <p className="text-sm text-muted-foreground">
+          {categoryFilter !== "all"
+            ? `No logs for “${categoryFilter}” yet.`
+            : "No logs yet."}
+        </p>
+      ) : null}
       <p className="mt-6 text-xs text-muted-foreground">
         Add new logs from the{" "}
         <Link href="/logs/upload" className="text-primary hover:underline">
