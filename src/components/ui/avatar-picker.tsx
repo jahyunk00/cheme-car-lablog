@@ -166,7 +166,10 @@ export function AvatarPicker({ value, onChange, displayName }: AvatarPickerProps
             </motion.div>
 
             <motion.div className="mt-6" variants={pickerVariants.container}>
-              <motion.div className="flex justify-center gap-4" variants={pickerVariants.container}>
+              <motion.div
+                className="flex max-w-md flex-wrap justify-center gap-3"
+                variants={pickerVariants.container}
+              >
                 {AVATAR_META.map((avatar) => (
                   <motion.button
                     key={avatar.id}

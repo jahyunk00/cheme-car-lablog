@@ -10,7 +10,7 @@ const bodySchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(120),
   email: z.string().email(),
   password: z.string().min(8, "Use at least 8 characters").max(200),
-  avatarId: z.number().int().min(1).max(4).optional(),
+  avatarId: z.number().int().min(1).max(8).optional(),
 });
 
 export async function POST(request: Request) {

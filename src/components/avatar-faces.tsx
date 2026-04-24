@@ -154,6 +154,154 @@ function Face4({ uniquePrefix, pixelSize = 40, className }: FaceProps) {
   );
 }
 
+function Face5({ uniquePrefix, pixelSize = 40, className }: FaceProps) {
+  const m = `${uniquePrefix}-5`;
+  return (
+    <svg
+      viewBox="0 0 36 36"
+      fill="none"
+      role="img"
+      xmlns="http://www.w3.org/2000/svg"
+      width={pixelSize}
+      height={pixelSize}
+      className={className}
+      aria-hidden
+    >
+      <mask id={m} maskUnits="userSpaceOnUse" x="0" y="0" width="36" height="36">
+        <rect width="36" height="36" rx="72" fill="#FFFFFF" />
+      </mask>
+      <g mask={`url(#${m})`}>
+        <rect width="36" height="36" fill="#4f46e5" />
+        <rect
+          x="0"
+          y="0"
+          width="36"
+          height="36"
+          transform="translate(-4 6) rotate(125 18 18) scale(1.05)"
+          fill="#a5b4fc"
+          rx="8"
+        />
+        <g transform="translate(0 -2) rotate(-8 18 18)">
+          <path d="M14 20c2.5 1.5 5.5 1.5 8 0" stroke="#eef2ff" fill="none" strokeWidth="1.2" strokeLinecap="round" />
+          <circle cx="12" cy="15" r="2" fill="#eef2ff" />
+          <circle cx="24" cy="15" r="2" fill="#eef2ff" />
+        </g>
+      </g>
+    </svg>
+  );
+}
+
+function Face6({ uniquePrefix, pixelSize = 40, className }: FaceProps) {
+  const m = `${uniquePrefix}-6`;
+  return (
+    <svg
+      viewBox="0 0 36 36"
+      fill="none"
+      role="img"
+      xmlns="http://www.w3.org/2000/svg"
+      width={pixelSize}
+      height={pixelSize}
+      className={className}
+      aria-hidden
+    >
+      <mask id={m} maskUnits="userSpaceOnUse" x="0" y="0" width="36" height="36">
+        <rect width="36" height="36" rx="72" fill="#FFFFFF" />
+      </mask>
+      <g mask={`url(#${m})`}>
+        <rect width="36" height="36" fill="#0f766e" />
+        <rect
+          x="0"
+          y="0"
+          width="36"
+          height="36"
+          transform="translate(6 -3) rotate(15 18 18) scale(1.15)"
+          fill="#5eead4"
+          rx="36"
+        />
+        <g transform="translate(0 1) rotate(4 18 18)">
+          <path d="M13 20.5a5 3.5 0 0 0 10 0" stroke="#042f2e" fill="none" strokeWidth="1.1" strokeLinecap="round" />
+          <rect x="11" y="13.5" width="2" height="2.5" rx="0.8" fill="#042f2e" />
+          <rect x="23" y="13.5" width="2" height="2.5" rx="0.8" fill="#042f2e" />
+        </g>
+      </g>
+    </svg>
+  );
+}
+
+function Face7({ uniquePrefix, pixelSize = 40, className }: FaceProps) {
+  const m = `${uniquePrefix}-7`;
+  return (
+    <svg
+      viewBox="0 0 36 36"
+      fill="none"
+      role="img"
+      xmlns="http://www.w3.org/2000/svg"
+      width={pixelSize}
+      height={pixelSize}
+      className={className}
+      aria-hidden
+    >
+      <mask id={m} maskUnits="userSpaceOnUse" x="0" y="0" width="36" height="36">
+        <rect width="36" height="36" rx="72" fill="#FFFFFF" />
+      </mask>
+      <g mask={`url(#${m})`}>
+        <rect width="36" height="36" fill="#fbcfe8" />
+        <rect
+          x="0"
+          y="0"
+          width="36"
+          height="36"
+          transform="translate(2 8) rotate(200 18 18) scale(1.2)"
+          fill="#be185d"
+          rx="6"
+        />
+        <g transform="translate(-1 0) rotate(-6 18 18)">
+          <path d="M12 20a6 2.5 0 0 0 12 0" fill="#fdf2f8" />
+          <circle cx="12" cy="14" r="1.8" fill="#fdf2f8" />
+          <circle cx="24" cy="14" r="1.8" fill="#fdf2f8" />
+        </g>
+      </g>
+    </svg>
+  );
+}
+
+function Face8({ uniquePrefix, pixelSize = 40, className }: FaceProps) {
+  const m = `${uniquePrefix}-8`;
+  return (
+    <svg
+      viewBox="0 0 36 36"
+      fill="none"
+      role="img"
+      xmlns="http://www.w3.org/2000/svg"
+      width={pixelSize}
+      height={pixelSize}
+      className={className}
+      aria-hidden
+    >
+      <mask id={m} maskUnits="userSpaceOnUse" x="0" y="0" width="36" height="36">
+        <rect width="36" height="36" rx="72" fill="#FFFFFF" />
+      </mask>
+      <g mask={`url(#${m})`}>
+        <rect width="36" height="36" fill="#d97706" />
+        <rect
+          x="0"
+          y="0"
+          width="36"
+          height="36"
+          transform="translate(-5 4) rotate(-35 18 18) scale(1.1)"
+          fill="#451a03"
+          rx="8"
+        />
+        <g transform="translate(1 -3) rotate(10 18 18)">
+          <path d="M15 21c2 0.8 4 0.8 6 0" stroke="#fef3c7" fill="none" strokeWidth="1.2" strokeLinecap="round" />
+          <ellipse cx="11.5" cy="15" rx="1.8" ry="2.2" fill="#fef3c7" />
+          <ellipse cx="24.5" cy="15" rx="1.8" ry="2.2" fill="#fef3c7" />
+        </g>
+      </g>
+    </svg>
+  );
+}
+
 export function AvatarArt({
   id,
   uniquePrefix,
@@ -175,6 +323,14 @@ export function AvatarArt({
       return <Face3 {...p} />;
     case 4:
       return <Face4 {...p} />;
+    case 5:
+      return <Face5 {...p} />;
+    case 6:
+      return <Face6 {...p} />;
+    case 7:
+      return <Face7 {...p} />;
+    case 8:
+      return <Face8 {...p} />;
     default:
       return <Face1 {...p} />;
   }
