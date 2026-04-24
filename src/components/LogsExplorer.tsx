@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { LogForm, type LogPayload } from "./LogForm";
 
 export type LogRow = {
@@ -27,17 +27,7 @@ export function LogsExplorer({
   currentUserId: string;
   role: string;
 }) {
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
   const [editing, setEditing] = useState<LogRow | null>(null);
-
-  const filtered = useMemo(() => {
-    return logs.filter((l) => {
-      if (from && l.date < from) return false;
-      if (to && l.date > to) return false;
-      return true;
-    });
-  }, [logs, from, to]);
 
   const initialForm: LogPayload = editing
     ? {
@@ -60,24 +50,14 @@ export function LogsExplorer({
     <div className="grid gap-8 lg:grid-cols-2">
       <div className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-lg font-medium text-white">Filters</h2>
+          <h2 className="text-lg font-medium text-white">New log</h2>
           <button
             type="button"
             onClick={() => setEditing(null)}
             className="text-sm text-primary hover:underline"
           >
-            New log for selected day
+            Clear selection (new entry)
           </button>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="space-y-1">
-            <label className="field-label">From</label>
-            <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="w-full" />
-          </div>
-          <div className="space-y-1">
-            <label className="field-label">To</label>
-            <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="w-full" />
-          </div>
         </div>
 
         <LogForm
@@ -89,10 +69,10 @@ export function LogsExplorer({
 
       <div>
         <h2 className="text-lg font-medium text-white mb-3">
-          Results <span className="text-slate-500 text-sm font-normal">({filtered.length})</span>
+          All logs <span className="text-slate-500 text-sm font-normal">({logs.length})</span>
         </h2>
         <ul className="space-y-3">
-          {filtered.map((log) => {
+          {logs.map((log) => {
             const canEdit = log.userId === currentUserId || role === "admin";
             return (
               <li key={log.id} className="rounded-lg border border-lab-border bg-lab-surface/60 p-4">
@@ -124,7 +104,7 @@ export function LogsExplorer({
             );
           })}
         </ul>
-        {filtered.length === 0 ? <p className="text-slate-500 text-sm mt-4">No logs match these filters.</p> : null}
+        {logs.length === 0 ? <p className="text-slate-500 text-sm mt-4">No logs yet.</p> : null}
         <p className="text-xs text-slate-600 mt-6">
           Tip: open the{" "}
           <Link href="/calendar" className="text-primary">
