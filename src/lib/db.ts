@@ -1,4 +1,4 @@
-import type { FeedItem, LogEntry, User, UserRole } from "./types";
+import type { CalendarEventEntry, FeedItem, LogEntry, User, UserRole } from "./types";
 import { createAdminClient } from "@/utils/supabase/admin";
 
 function admin() {
@@ -197,4 +197,68 @@ export async function listFeed(limit = 30): Promise<FeedItem[]> {
     .limit(limit);
   if (error) throw new Error(error.message);
   return (data ?? []).map((r) => mapFeed(r as Parameters<typeof mapFeed>[0]));
+}
+
+function mapCalendarEvent(row: {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string;
+  start_date: string;
+  end_date: string | null;
+  created_at: string;
+  updated_at: string;
+}): CalendarEventEntry {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    title: row.title,
+    description: row.description ?? "",
+    startDate: row.start_date.slice(0, 10),
+    endDate: row.end_date ? row.end_date.slice(0, 10) : null,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+export async function listAllCalendarEvents(): Promise<CalendarEventEntry[]> {
+  const { data, error } = await admin()
+    .from("lablog_calendar_events")
+    .select("*")
+    .order("start_date", { ascending: true });
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((r) => mapCalendarEvent(r as Parameters<typeof mapCalendarEvent>[0]));
+}
+
+export async function getCalendarEvent(id: string): Promise<CalendarEventEntry | undefined> {
+  const { data, error } = await admin()
+    .from("lablog_calendar_events")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) return undefined;
+  return mapCalendarEvent(data as Parameters<typeof mapCalendarEvent>[0]);
+}
+
+export async function saveCalendarEvent(entry: CalendarEventEntry) {
+  const { error } = await admin().from("lablog_calendar_events").upsert(
+    {
+      id: entry.id,
+      user_id: entry.userId,
+      title: entry.title,
+      description: entry.description,
+      start_date: entry.startDate,
+      end_date: entry.endDate,
+      created_at: entry.createdAt,
+      updated_at: entry.updatedAt,
+    },
+    { onConflict: "id" }
+  );
+  if (error) throw new Error(error.message);
+}
+
+export async function deleteCalendarEvent(id: string) {
+  const { error } = await admin().from("lablog_calendar_events").delete().eq("id", id);
+  if (error) throw new Error(error.message);
 }

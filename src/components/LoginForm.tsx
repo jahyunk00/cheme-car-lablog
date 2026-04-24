@@ -16,19 +16,60 @@ export function LoginForm() {
     setError(null);
     setLoading(true);
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json().catch(() => ({}));
+      let res: Response;
+      try {
+        res = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+      } catch (e) {
+        const isNetwork =
+          e instanceof TypeError ||
+          (e instanceof Error &&
+            (e.message === "Failed to fetch" || e.message.includes("NetworkError")));
+        setError(
+          isNetwork
+            ? "Could not reach the app (Failed to fetch). Start `npm run dev` in the lablog folder, wait until it says Ready, then open the exact URL it prints (same host and port, e.g. http://localhost:3000). Stop any old dev server or other app using that port."
+            : e instanceof Error
+              ? e.message
+              : "Could not reach the server."
+        );
+        return;
+      }
+
+      const raw = await res.text();
+      let data: { error?: string; message?: string } = {};
+      try {
+        data = raw ? (JSON.parse(raw) as typeof data) : {};
+      } catch {
+        data = {};
+      }
+
       if (!res.ok) {
-        setError(typeof data.error === "string" ? data.error : "Sign-in failed");
+        const fromApi =
+          typeof data.error === "string"
+            ? data.error
+            : typeof data.message === "string"
+              ? data.message
+              : null;
+
+        const portHint =
+          typeof window !== "undefined" && res.status === 404
+            ? " Wrong URL/port? Use the same port shown in the terminal where you ran `npm run dev` (e.g. if it says 3001, open http://localhost:3001)."
+            : "";
+
+        setError(
+          fromApi ??
+            `Sign-in failed (HTTP ${res.status}).${portHint} Check the terminal running the dev server for errors.`
+        );
         return;
       }
       const from = searchParams.get("from");
       router.push(from && from.startsWith("/") && !from.startsWith("//") ? from : "/dashboard");
       router.refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Something went wrong.");
     } finally {
       setLoading(false);
     }
