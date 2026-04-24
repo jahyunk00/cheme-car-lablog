@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { listAttendanceForUser } from "@/lib/db";
+import { listAttendanceForUserSafe } from "@/lib/db";
 import { getSession } from "@/lib/session";
 
 const dateRe = /^\d{4}-\d{2}-\d{2}$/;
@@ -18,12 +18,6 @@ export async function GET(request: Request) {
     );
   }
 
-  try {
-    const entries = await listAttendanceForUser(session.sub, from, to);
-    return NextResponse.json({ entries });
-  } catch (err) {
-    console.error("[api/attendance/me GET]", err);
-    const message = err instanceof Error ? err.message : "Could not load attendance.";
-    return NextResponse.json({ error: message }, { status: 500 });
-  }
+  const entries = await listAttendanceForUserSafe(session.sub, from, to);
+  return NextResponse.json({ entries });
 }

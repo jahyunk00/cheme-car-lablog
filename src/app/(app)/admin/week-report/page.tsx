@@ -6,7 +6,7 @@ import { CopyTextButton } from "@/components/CopyTextButton";
 import {
   listAllCalendarEvents,
   listAllLogs,
-  listAttendanceBetween,
+  listAttendanceBetweenSafe,
   listDirectoryUsers,
 } from "@/lib/db";
 import { isAdmin } from "@/lib/roles";
@@ -38,12 +38,7 @@ export default async function AdminWeekReportPage({ searchParams }: Props) {
   const logs = allLogs.filter((l) => l.date >= startStr && l.date <= endStr);
   const nameById = Object.fromEntries(directory.map((u) => [u.id, u.name]));
 
-  let attendance: Awaited<ReturnType<typeof listAttendanceBetween>> = [];
-  try {
-    attendance = await listAttendanceBetween(startStr, endStr);
-  } catch {
-    attendance = [];
-  }
+  const attendance = await listAttendanceBetweenSafe(startStr, endStr);
 
   const report = buildWeeklyNarrativeReport({
     weekStart: startStr,

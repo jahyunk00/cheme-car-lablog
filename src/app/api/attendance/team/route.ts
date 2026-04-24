@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { listAttendanceBetween } from "@/lib/db";
+import { listAttendanceBetweenSafe } from "@/lib/db";
 import { canViewTeamMetrics } from "@/lib/roles";
 import { getSession } from "@/lib/session";
 
@@ -24,7 +24,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const entries = await listAttendanceBetween(from, to);
+    const entries = await listAttendanceBetweenSafe(from, to);
     return NextResponse.json({ entries });
   } catch (err) {
     console.error("[api/attendance/team GET]", err);

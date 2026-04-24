@@ -423,6 +423,29 @@ export async function listAttendanceBetween(from: string, to: string): Promise<A
   return (data ?? []).map((r) => mapAttendance(r as Parameters<typeof mapAttendance>[0]));
 }
 
+/** If `lablog_attendance` is missing or PostgREST errors, return [] (prevents 500 on /attendance). */
+export async function listAttendanceForUserSafe(
+  userId: string,
+  from: string,
+  to: string
+): Promise<AttendanceEntry[]> {
+  try {
+    return await listAttendanceForUser(userId, from, to);
+  } catch (e) {
+    console.warn("[lablog] listAttendanceForUser:", e);
+    return [];
+  }
+}
+
+export async function listAttendanceBetweenSafe(from: string, to: string): Promise<AttendanceEntry[]> {
+  try {
+    return await listAttendanceBetween(from, to);
+  } catch (e) {
+    console.warn("[lablog] listAttendanceBetween:", e);
+    return [];
+  }
+}
+
 function mapCalendarEvent(row: {
   id: string;
   user_id: string;

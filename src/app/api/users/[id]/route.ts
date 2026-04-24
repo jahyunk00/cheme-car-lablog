@@ -8,6 +8,16 @@ const patchSchema = z.object({
   role: z.enum(["member", "board"]),
 });
 
+const ROLE_CHECK_DB_FIX =
+  "Your Supabase project still has an old check on lablog_users.role that does not allow 'board'. In Supabase → SQL Editor, run:\n\n" +
+  "alter table public.lablog_users drop constraint if exists lablog_users_role_check;\n" +
+  "alter table public.lablog_users add constraint lablog_users_role_check check (role in ('admin', 'board', 'member'));\n\n" +
+  "Then try again. If check-in or team attendance fails, also run migration 007 (lablog_attendance) from the repo.";
+
+function isRoleCheckViolation(message: string): boolean {
+  return /lablog_users_role_check|23514|role_check/i.test(message);
+}
+
 type RouteContext = { params: Promise<{ id: string }> };
 
 export async function PATCH(request: Request, context: RouteContext) {
@@ -44,6 +54,9 @@ export async function PATCH(request: Request, context: RouteContext) {
         { error: "Admin accounts cannot be changed from the app. Update role in Supabase if needed." },
         { status: 403 }
       );
+    }
+    if (isRoleCheckViolation(msg)) {
+      return NextResponse.json({ error: ROLE_CHECK_DB_FIX }, { status: 400 });
     }
     console.error("[api/users PATCH]", err);
     return NextResponse.json({ error: msg }, { status: 500 });

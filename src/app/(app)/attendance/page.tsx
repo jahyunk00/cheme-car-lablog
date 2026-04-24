@@ -2,10 +2,24 @@ import { format, subDays } from "date-fns";
 import { redirect } from "next/navigation";
 
 import { AttendanceMarkPanel } from "@/components/AttendanceMarkPanel";
-import { UserAvatar } from "@/components/UserAvatar";
-import { listAttendanceBetween, listAttendanceForUser, listDirectoryUsers } from "@/lib/db";
+import { AttendanceTeamGrid } from "@/components/AttendanceTeamGrid";
+import {
+  listAttendanceBetweenSafe,
+  listAttendanceForUserSafe,
+  listDirectoryUsers,
+} from "@/lib/db";
 import { canViewTeamMetrics } from "@/lib/roles";
 import { getSession } from "@/lib/session";
+import { cn } from "@/lib/utils";
+
+const chipPalette = [
+  "border-emerald-500/40 bg-gradient-to-br from-emerald-500/20 to-emerald-600/5 text-emerald-950 dark:border-emerald-400/30 dark:from-emerald-500/20 dark:to-transparent dark:text-emerald-50",
+  "border-sky-500/40 bg-gradient-to-br from-sky-500/20 to-sky-600/5 text-sky-950 dark:border-sky-400/30 dark:from-sky-500/20 dark:to-transparent dark:text-sky-50",
+  "border-violet-500/40 bg-gradient-to-br from-violet-500/20 to-fuchsia-600/5 text-violet-950 dark:border-violet-400/30 dark:from-violet-500/20 dark:to-transparent dark:text-violet-50",
+  "border-amber-500/40 bg-gradient-to-br from-amber-500/20 to-orange-600/5 text-amber-950 dark:border-amber-400/30 dark:from-amber-500/15 dark:to-transparent dark:text-amber-50",
+  "border-rose-500/40 bg-gradient-to-br from-rose-500/15 to-pink-600/5 text-rose-950 dark:border-rose-400/30 dark:from-rose-500/15 dark:to-transparent dark:text-rose-50",
+  "border-cyan-500/40 bg-gradient-to-br from-cyan-500/20 to-teal-600/5 text-cyan-950 dark:border-cyan-400/30 dark:from-cyan-500/20 dark:to-transparent dark:text-cyan-50",
+] as const;
 
 export default async function AttendancePage() {
   const session = await getSession();
@@ -15,115 +29,92 @@ export default async function AttendancePage() {
   const from = format(subDays(new Date(), 89), "yyyy-MM-dd");
   const teamFrom = format(subDays(new Date(), 13), "yyyy-MM-dd");
 
-  const myEntries = await listAttendanceForUser(session.sub, from, today);
+  const myEntries = await listAttendanceForUserSafe(session.sub, from, today);
   const markedDates = myEntries.map((e) => e.attendedDate);
 
   const showTeam = canViewTeamMetrics(session.role);
   const directory = showTeam ? await listDirectoryUsers() : [];
-  const teamEntries = showTeam ? await listAttendanceBetween(teamFrom, today) : [];
-  const presentByUser = new Map<string, Set<string>>();
-  for (const e of teamEntries) {
-    if (!presentByUser.has(e.userId)) presentByUser.set(e.userId, new Set());
-    presentByUser.get(e.userId)!.add(e.attendedDate);
-  }
+  const teamEntries = showTeam ? await listAttendanceBetweenSafe(teamFrom, today) : [];
 
   const dayLabels: string[] = [];
   for (let i = 0; i < 14; i++) {
     dayLabels.push(format(subDays(new Date(), 13 - i), "yyyy-MM-dd"));
   }
 
+  const teamPresence = teamEntries.map((e) => ({
+    userId: e.userId,
+    attendedDate: e.attendedDate,
+  }));
+
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold text-foreground">Lab check-in</h1>
-        <p className="mt-1 text-sm text-muted-foreground max-w-prose text-pretty">
-          Mark the days you are physically in lab.{" "}
+    <div className="space-y-10">
+      <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-gradient-to-br from-violet-600/[0.07] via-background to-cyan-600/[0.08] p-6 shadow-md sm:p-8 dark:from-violet-950/50 dark:via-card dark:to-teal-950/40 dark:shadow-lg dark:shadow-violet-950/20">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-24 -top-24 h-56 w-56 rounded-full bg-fuchsia-400/20 blur-3xl dark:bg-fuchsia-500/25"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -bottom-20 -left-16 h-48 w-48 rounded-full bg-cyan-400/15 blur-3xl dark:bg-cyan-500/20"
+        />
+        <p className="relative text-xs font-semibold uppercase tracking-[0.2em] text-violet-600 dark:text-teal-300/90">
+          Presence
+        </p>
+        <h1 className="relative mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
+          <span className="bg-gradient-to-r from-violet-700 via-foreground to-cyan-700 bg-clip-text text-transparent dark:from-violet-200 dark:via-white dark:to-cyan-200">
+            Lab check-in
+          </span>
+        </h1>
+        <p className="relative mt-3 max-w-prose text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
+          Mark the days you were physically in lab. The team grid uses bright, per-person colors for check-ins.{" "}
           {showTeam
-            ? "As a board member or admin you can see everyone’s recent check-ins below."
-            : "Only board members and admins can see team-wide attendance and other lab metrics."}
+            ? "As board or admin you see the whole lab at a glance."
+            : "Board and admins see the team strip below."}
         </p>
       </div>
 
       <AttendanceMarkPanel defaultDate={today} markedDates={markedDates} />
 
-      <section className="rounded-xl border border-border bg-card/40 p-4 sm:p-5">
+      <section className="relative overflow-hidden rounded-2xl border border-border/70 bg-card/50 p-5 sm:p-6">
+        <div
+          aria-hidden
+          className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-violet-500/40 to-transparent"
+        />
         <h2 className="text-lg font-semibold text-foreground">Your last 90 days</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           {myEntries.length === 0
-            ? "No check-ins recorded in this window yet."
-            : `${myEntries.length} day${myEntries.length === 1 ? "" : "s"} marked.`}
+            ? "No check-ins in this window yet—use “Mark present” above."
+            : `${myEntries.length} day${myEntries.length === 1 ? "" : "s"} on the books.`}
         </p>
         {myEntries.length > 0 ? (
-          <ul className="mt-3 flex flex-wrap gap-2 text-sm">
-            {myEntries.slice(0, 40).map((e) => (
+          <ul className="mt-4 flex flex-wrap gap-2 text-xs sm:text-sm">
+            {myEntries.slice(0, 40).map((e, i) => (
               <li
                 key={e.id}
-                className="rounded-md border border-border bg-muted/50 px-2 py-1 text-foreground"
+                className={cn(
+                  "rounded-full border px-2.5 py-1 font-medium shadow-sm backdrop-blur-sm",
+                  chipPalette[i % chipPalette.length]
+                )}
               >
                 {e.attendedDate}
               </li>
             ))}
             {myEntries.length > 40 ? (
-              <li className="text-muted-foreground px-1 py-1">+ {myEntries.length - 40} more</li>
+              <li className="rounded-full border border-border/60 bg-muted/30 px-2.5 py-1 text-muted-foreground">
+                + {myEntries.length - 40} more
+              </li>
             ) : null}
           </ul>
         ) : null}
       </section>
 
       {showTeam ? (
-        <section className="rounded-xl border border-border bg-card/40 p-4 sm:p-5 overflow-x-auto">
-          <h2 className="text-lg font-semibold text-foreground">Team (last 14 days)</h2>
-          <p className="mt-1 text-sm text-muted-foreground mb-4">
-            Each cell is one calendar day. Filled means that teammate checked in for that day.
-          </p>
-          <table className="w-full min-w-[640px] border-collapse text-left text-sm">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="py-2 pr-3 font-medium text-muted-foreground">Teammate</th>
-                {dayLabels.map((d) => (
-                  <th key={d} className="py-2 px-0.5 text-center font-normal text-muted-foreground w-8">
-                    <span className="sr-only">{d}</span>
-                    <span aria-hidden className="block text-[10px] leading-tight">
-                      {d.slice(5, 7)}
-                      <br />
-                      {d.slice(8, 10)}
-                    </span>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {directory.map((u) => {
-                const set = presentByUser.get(u.id) ?? new Set();
-                return (
-                  <tr key={u.id} className="border-b border-border/60">
-                    <td className="py-2 pr-3 whitespace-nowrap">
-                      <span className="inline-flex items-center gap-2">
-                        <UserAvatar avatarId={u.avatarId} size={22} title={u.name} />
-                        <span className="text-foreground">{u.name}</span>
-                      </span>
-                    </td>
-                    {dayLabels.map((d) => {
-                      const on = set.has(d);
-                      return (
-                        <td key={d} className="py-1 px-0.5 text-center">
-                          <span
-                            className={
-                              on
-                                ? "inline-block h-3 w-3 rounded-sm bg-primary"
-                                : "inline-block h-3 w-3 rounded-sm bg-muted/60"
-                            }
-                            title={on ? `${u.name} — ${d}` : d}
-                          />
-                        </td>
-                      );
-                    })}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </section>
+        <AttendanceTeamGrid
+          users={directory.map((u) => ({ id: u.id, name: u.name, avatarId: u.avatarId }))}
+          entries={teamPresence}
+          dayLabels={dayLabels}
+          today={today}
+        />
       ) : null}
     </div>
   );

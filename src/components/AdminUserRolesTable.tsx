@@ -55,7 +55,9 @@ export function AdminUserRolesTable({
   return (
     <div className="space-y-4">
       {error ? (
-        <p className="text-sm text-red-400 rounded-lg border border-red-900/40 bg-red-950/30 px-3 py-2">{error}</p>
+        <p className="text-sm text-red-400 rounded-lg border border-red-900/40 bg-red-950/30 px-3 py-2 whitespace-pre-wrap break-words">
+          {error}
+        </p>
       ) : null}
       <div className="overflow-x-auto rounded-xl border border-border">
         <table className="w-full min-w-[520px] text-left text-sm">
