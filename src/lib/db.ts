@@ -6,6 +6,42 @@ function admin() {
   return createAdminClient();
 }
 
+/** Full text from PostgREST / Supabase errors (message is not always enough). */
+function supabaseErrorText(err: unknown): string {
+  if (err == null) return "";
+  if (typeof err === "string") return err;
+  if (typeof err !== "object") return String(err);
+  const o = err as Record<string, unknown>;
+  const chunks: string[] = [];
+  for (const k of ["message", "details", "hint", "code"]) {
+    const v = o[k];
+    if (typeof v === "string" && v.length) chunks.push(v);
+  }
+  if (o.cause != null) {
+    const nested = supabaseErrorText(o.cause);
+    if (nested) chunks.push(nested);
+  }
+  if (!chunks.length) {
+    try {
+      return JSON.stringify(o);
+    } catch {
+      return String(o);
+    }
+  }
+  return chunks.join("\n");
+}
+
+function isMissingLablogCategoryColumnError(err: unknown): boolean {
+  const t = supabaseErrorText(err);
+  if (!t) return false;
+  const lower = t.toLowerCase();
+  if (!lower.includes("category")) return false;
+  if (lower.includes("lablog_logs")) return true;
+  if (lower.includes("schema cache")) return true;
+  if (lower.includes("column")) return true;
+  return false;
+}
+
 function mapUser(row: {
   id: string;
   name: string;
@@ -172,10 +208,6 @@ export async function insertUser(user: User) {
   }
 }
 
-function logCategoryColumnMissing(msg: string) {
-  return /\bcategory\b.*schema cache|\bcategory\b.*column|Could not find the .*category/i.test(msg);
-}
-
 export async function saveLog(
   log: LogEntry,
   feedItem: Omit<FeedItem, "id" | "createdAt"> & { id?: string }
@@ -207,11 +239,19 @@ export async function saveLog(
 
   let { error: logErr } = await client.from("lablog_logs").upsert(withCategory, { onConflict: "id" });
 
-  if (logErr && logCategoryColumnMissing(logErr.message)) {
+  if (logErr && isMissingLablogCategoryColumnError(logErr)) {
     ({ error: logErr } = await client.from("lablog_logs").upsert(legacyNoCategory, { onConflict: "id" }));
   }
 
-  if (logErr) throw new Error(logErr.message);
+  if (logErr) {
+    if (isMissingLablogCategoryColumnError(logErr)) {
+      throw new Error(
+        "The database is still rejecting log writes related to `category`. In Supabase → SQL Editor, run the full contents of `supabase/migrations/003_lablog_log_category.sql`, then wait ~1 minute for the API schema cache to refresh. Raw error: " +
+          supabaseErrorText(logErr)
+      );
+    }
+    throw new Error(supabaseErrorText(logErr) || "Could not save log.");
+  }
 
   const feedId = feedItem.id ?? crypto.randomUUID();
   const createdAt = new Date().toISOString();
