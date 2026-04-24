@@ -1,7 +1,15 @@
 import type { LablogAvatarId } from "@/lib/avatar-ids";
 import type { LogCategory } from "@/lib/log-categories";
 
-export type UserRole = "admin" | "member";
+export type UserRole = "admin" | "board" | "member";
+
+/** One lab check-in for a calendar day (user marked present). */
+export type AttendanceEntry = {
+  id: string;
+  userId: string;
+  attendedDate: string;
+  createdAt: string;
+};
 
 export type User = {
   id: string;

@@ -3,14 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const links = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/calendar", label: "Calendar" },
-  { href: "/logs", label: "Logs" },
-  { href: "/weekly-summary", label: "Weekly summary" },
-];
+export type AppNavLink = { href: string; label: string };
 
-export function AppNav() {
+export function AppNav({ links }: { links: AppNavLink[] }) {
   const pathname = usePathname();
 
   return (

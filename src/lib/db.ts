@@ -1,5 +1,5 @@
 import { parseLablogAvatarId } from "./avatar-ids";
-import type { CalendarEventEntry, FeedItem, LogEntry, User, UserRole } from "./types";
+import type { AttendanceEntry, CalendarEventEntry, FeedItem, LogEntry, User, UserRole } from "./types";
 import { parseLogCategory } from "./log-categories";
 import { createAdminClient } from "@/utils/supabase/admin";
 
@@ -43,6 +43,11 @@ function isMissingLablogCategoryColumnError(err: unknown): boolean {
   return false;
 }
 
+function parseUserRole(value: string): UserRole {
+  if (value === "admin" || value === "board" || value === "member") return value;
+  return "member";
+}
+
 function isMissingUserAvatarColumnError(err: unknown): boolean {
   const t = supabaseErrorText(err);
   if (!t) return false;
@@ -62,7 +67,7 @@ function mapUser(row: {
   password_hash: string;
   avatar_id?: number | null;
 }): User {
-  const role: UserRole = row.role === "admin" ? "admin" : "member";
+  const role = parseUserRole(row.role);
   return {
     id: row.id,
     name: row.name,
@@ -158,9 +163,18 @@ export async function listDirectoryUsers(): Promise<
     id: row.id as string,
     name: row.name as string,
     email: row.email as string,
-    role: row.role === "admin" ? "admin" : "member",
+    role: parseUserRole(row.role as string),
     avatarId: parseLablogAvatarId((row as { avatar_id?: unknown }).avatar_id),
   }));
+}
+
+/** Set a user to member or board. Admins cannot be changed here (use database for admin accounts). */
+export async function updateUserMemberBoardRole(userId: string, role: "member" | "board") {
+  const existing = await getUserById(userId);
+  if (!existing) throw new Error("NOT_FOUND");
+  if (existing.role === "admin") throw new Error("ADMIN_ROLE_LOCKED");
+  const { error } = await admin().from("lablog_users").update({ role }).eq("id", userId);
+  if (error) throw new Error(error.message);
 }
 
 export async function listLogsForUser(userId: string): Promise<LogEntry[]> {
@@ -317,6 +331,96 @@ export async function listFeed(limit = 30): Promise<FeedItem[]> {
     .limit(limit);
   if (error) throw new Error(error.message);
   return (data ?? []).map((r) => mapFeed(r as Parameters<typeof mapFeed>[0]));
+}
+
+function mapAttendance(row: {
+  id: string;
+  user_id: string;
+  attended_date: string;
+  created_at: string;
+}): AttendanceEntry {
+  const d = row.attended_date;
+  const dateStr = typeof d === "string" && d.length >= 10 ? d.slice(0, 10) : String(d).slice(0, 10);
+  return {
+    id: row.id,
+    userId: row.user_id,
+    attendedDate: dateStr,
+    createdAt: row.created_at,
+  };
+}
+
+/** Stable primary key for upserts (user + calendar day). */
+export function attendanceRowId(userId: string, attendedDate: string) {
+  return `${userId}__${attendedDate}`;
+}
+
+export async function recordAttendance(userId: string, attendedDate: string): Promise<AttendanceEntry> {
+  const id = attendanceRowId(userId, attendedDate);
+  const now = new Date().toISOString();
+  const { error } = await admin().from("lablog_attendance").upsert(
+    {
+      id,
+      user_id: userId,
+      attended_date: attendedDate,
+      created_at: now,
+    },
+    { onConflict: "user_id,attended_date" }
+  );
+  if (error) throw new Error(error.message);
+  const row = await getAttendanceDay(userId, attendedDate);
+  if (!row) throw new Error("Could not read attendance after save.");
+  return row;
+}
+
+export async function getAttendanceDay(
+  userId: string,
+  attendedDate: string
+): Promise<AttendanceEntry | undefined> {
+  const { data, error } = await admin()
+    .from("lablog_attendance")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("attended_date", attendedDate)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) return undefined;
+  return mapAttendance(data as Parameters<typeof mapAttendance>[0]);
+}
+
+export async function removeAttendance(userId: string, attendedDate: string) {
+  const { error } = await admin()
+    .from("lablog_attendance")
+    .delete()
+    .eq("user_id", userId)
+    .eq("attended_date", attendedDate);
+  if (error) throw new Error(error.message);
+}
+
+export async function listAttendanceForUser(
+  userId: string,
+  from: string,
+  to: string
+): Promise<AttendanceEntry[]> {
+  const { data, error } = await admin()
+    .from("lablog_attendance")
+    .select("*")
+    .eq("user_id", userId)
+    .gte("attended_date", from)
+    .lte("attended_date", to)
+    .order("attended_date", { ascending: false });
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((r) => mapAttendance(r as Parameters<typeof mapAttendance>[0]));
+}
+
+export async function listAttendanceBetween(from: string, to: string): Promise<AttendanceEntry[]> {
+  const { data, error } = await admin()
+    .from("lablog_attendance")
+    .select("*")
+    .gte("attended_date", from)
+    .lte("attended_date", to)
+    .order("attended_date", { ascending: false });
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((r) => mapAttendance(r as Parameters<typeof mapAttendance>[0]));
 }
 
 function mapCalendarEvent(row: {

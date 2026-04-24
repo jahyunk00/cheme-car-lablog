@@ -1,7 +1,31 @@
 import Link from "next/link";
 
-import { AppNav } from "@/components/AppNav";
+import { AppNav, type AppNavLink } from "@/components/AppNav";
 import { UserAvatar } from "@/components/UserAvatar";
+import { canViewTeamMetrics, isAdmin } from "@/lib/roles";
+import type { UserRole } from "@/lib/types";
+
+function roleLabel(role: UserRole) {
+  if (role === "admin") return "Admin";
+  if (role === "board") return "Board";
+  return "Member";
+}
+
+function buildNavLinks(role: UserRole): AppNavLink[] {
+  const core: AppNavLink[] = [
+    { href: "/dashboard", label: "Dashboard" },
+    { href: "/calendar", label: "Calendar" },
+    { href: "/logs", label: "Logs" },
+    { href: "/attendance", label: "Lab check-in" },
+  ];
+  if (canViewTeamMetrics(role)) {
+    core.push({ href: "/weekly-summary", label: "Weekly summary" });
+  }
+  if (isAdmin(role)) {
+    core.push({ href: "/admin/roles", label: "Team roles" });
+  }
+  return core;
+}
 
 export function AppShell({
   userName,
@@ -10,10 +34,11 @@ export function AppShell({
   children,
 }: {
   userName: string;
-  role: string;
+  role: UserRole;
   avatarId: number;
   children: React.ReactNode;
 }) {
+  const navLinks = buildNavLinks(role);
   return (
     <div className="flex min-h-dvh min-h-screen flex-col">
       <header className="sticky top-0 z-20 border-b border-lab-border bg-lab-surface/80 pt-[env(safe-area-inset-top,0px)] backdrop-blur">
@@ -26,7 +51,7 @@ export function AppShell({
               LabLog
             </Link>
             <div className="-mx-3 overflow-x-auto px-3 pb-0.5 scrollbar-none sm:mx-0 sm:px-0 lg:pb-0">
-              <AppNav />
+              <AppNav links={navLinks} />
             </div>
           </div>
           <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-lab-border/60 pt-3 text-sm text-slate-400 lg:border-t-0 lg:pt-0">
@@ -35,7 +60,7 @@ export function AppShell({
               <span className="min-w-0 truncate">
                 {userName}
                 <span className="text-slate-600"> · </span>
-                <span className="capitalize">{role}</span>
+                <span>{roleLabel(role)}</span>
               </span>
             </span>
             <form action="/api/auth/logout" method="post" className="shrink-0">

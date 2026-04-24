@@ -14,6 +14,14 @@ export async function ensureSeedUsers() {
     passwordHash: await hashPassword("admin123"),
     avatarId: 1,
   };
+  const board: User = {
+    id: "user_board",
+    name: "Board Member",
+    email: "board@lablog.local",
+    role: "board",
+    passwordHash: await hashPassword("board123"),
+    avatarId: 3,
+  };
   const member: User = {
     id: "user_member",
     name: "Team Member",
@@ -24,5 +32,6 @@ export async function ensureSeedUsers() {
   };
 
   await upsertUser(admin);
+  await upsertUser(board);
   await upsertUser(member);
 }

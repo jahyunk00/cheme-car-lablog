@@ -2,30 +2,37 @@ import { format, startOfWeek, endOfWeek } from "date-fns";
 import Link from "next/link";
 import { UserAvatar } from "@/components/UserAvatar";
 import { listAllLogs, listDirectoryUsers, listFeed } from "@/lib/db";
+import { canViewTeamMetrics } from "@/lib/roles";
+import { getSession } from "@/lib/session";
 
 export default async function DashboardPage() {
+  const session = await getSession();
+  if (!session) return null;
+
+  const showTeam = canViewTeamMetrics(session.role);
   const today = format(new Date(), "yyyy-MM-dd");
-  const [logs, feed, directory] = await Promise.all([
-    listAllLogs(),
-    listFeed(12),
-    listDirectoryUsers(),
-  ]);
+  const [logs, directory] = await Promise.all([listAllLogs(), listDirectoryUsers()]);
+  const feed = showTeam ? await listFeed(12) : [];
   const nameById = Object.fromEntries(directory.map((u) => [u.id, u.name]));
   const avatarById = Object.fromEntries(directory.map((u) => [u.id, u.avatarId]));
-  const todayLogs = logs.filter((l) => l.date === today);
+  const todayLogsAll = logs.filter((l) => l.date === today);
+  const todayLogs = showTeam ? todayLogsAll : todayLogsAll.filter((l) => l.userId === session.sub);
 
   const ws = startOfWeek(new Date(), { weekStartsOn: 1 });
   const we = endOfWeek(new Date(), { weekStartsOn: 1 });
   const weekStart = format(ws, "yyyy-MM-dd");
   const weekEnd = format(we, "yyyy-MM-dd");
-  const weekLogs = logs.filter((l) => l.date >= weekStart && l.date <= weekEnd);
+  const weekLogsAll = logs.filter((l) => l.date >= weekStart && l.date <= weekEnd);
+  const weekLogs = showTeam ? weekLogsAll : weekLogsAll.filter((l) => l.userId === session.sub);
 
   return (
     <div className="space-y-10">
       <div>
         <h1 className="text-2xl font-semibold text-white">Dashboard</h1>
         <p className="text-slate-400 mt-1 text-sm">
-          Today&apos;s activity, a live feed, and a quick look at this week.
+          {showTeam
+            ? "Today’s activity, a live feed, and a quick look at this week."
+            : "Your logs today and a quick look at your week. Team metrics are available to board members and admins."}
         </p>
       </div>
 
@@ -33,7 +40,9 @@ export default async function DashboardPage() {
         <div className="rounded-xl border border-lab-border bg-lab-surface p-5">
           <h2 className="text-sm font-medium text-slate-400 uppercase tracking-wide">Today</h2>
           <p className="mt-2 text-3xl font-semibold text-white">{todayLogs.length}</p>
-          <p className="text-sm text-slate-500 mt-1">logs for {today}</p>
+          <p className="text-sm text-slate-500 mt-1">
+            {showTeam ? "team logs" : "your logs"} for {today}
+          </p>
           <Link href="/logs" className="mt-4 inline-block text-sm text-primary">
             Add or view logs →
           </Link>
@@ -41,10 +50,16 @@ export default async function DashboardPage() {
         <div className="rounded-xl border border-lab-border bg-lab-surface p-5">
           <h2 className="text-sm font-medium text-slate-400 uppercase tracking-wide">This week</h2>
           <p className="mt-2 text-3xl font-semibold text-white">{weekLogs.length}</p>
-          <p className="text-sm text-slate-500 mt-1">team logs (Mon–Sun)</p>
-          <Link href="/weekly-summary" className="mt-4 inline-block text-sm text-primary">
-            Open weekly summary →
-          </Link>
+          <p className="text-sm text-slate-500 mt-1">{showTeam ? "team logs" : "your logs"} (Mon–Sun)</p>
+          {showTeam ? (
+            <Link href="/weekly-summary" className="mt-4 inline-block text-sm text-primary">
+              Open weekly summary →
+            </Link>
+          ) : (
+            <p className="mt-4 text-xs text-slate-500 leading-relaxed">
+              Weekly team summary is visible to board members and admins.
+            </p>
+          )}
         </div>
         <div className="rounded-xl border border-lab-border bg-lab-surface p-5">
           <h2 className="text-sm font-medium text-slate-400 uppercase tracking-wide">Calendar</h2>
@@ -59,7 +74,9 @@ export default async function DashboardPage() {
 
       <div className="grid gap-8 lg:grid-cols-2">
         <section>
-          <h2 className="text-lg font-medium text-white mb-3">Today&apos;s logs</h2>
+          <h2 className="text-lg font-medium text-white mb-3">
+            {showTeam ? "Today’s logs" : "Your logs today"}
+          </h2>
           {todayLogs.length === 0 ? (
             <p className="text-slate-500 text-sm">No logs yet for today.</p>
           ) : (
@@ -97,7 +114,15 @@ export default async function DashboardPage() {
 
         <section>
           <h2 className="text-lg font-medium text-white mb-3">Activity feed</h2>
-          {feed.length === 0 ? (
+          {!showTeam ? (
+            <p className="text-slate-500 text-sm leading-relaxed">
+              The live team feed is available to board members and admins. You can still browse all shared logs under{" "}
+              <Link href="/logs" className="text-primary hover:underline">
+                Logs
+              </Link>
+              .
+            </p>
+          ) : feed.length === 0 ? (
             <p className="text-slate-500 text-sm">No recent activity yet.</p>
           ) : (
             <ul className="space-y-2 text-sm">
