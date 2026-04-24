@@ -1,7 +1,7 @@
-import { HomeOrbit } from "@/components/HomeOrbit";
+import { ClubIntroHome } from "@/components/ClubIntroHome";
 import { getSession } from "@/lib/session";
 
 export default async function HomePage() {
   const session = await getSession();
-  return <HomeOrbit isAuthed={!!session} userName={session?.name ?? null} />;
+  return <ClubIntroHome isAuthed={!!session} userName={session?.name ?? null} />;
 }
