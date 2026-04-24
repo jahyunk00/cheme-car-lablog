@@ -75,7 +75,7 @@ export function LogsExplorer({
           <button
             type="button"
             onClick={() => setEditing(null)}
-            className="text-sm text-blue-400 hover:text-blue-300"
+            className="text-sm text-primary hover:underline"
           >
             New log for selected day
           </button>
@@ -144,7 +144,7 @@ export function LogsExplorer({
                     <button
                       type="button"
                       onClick={() => setEditing(log)}
-                      className="shrink-0 h-fit text-sm text-blue-400 hover:text-blue-300"
+                      className="h-fit shrink-0 text-sm text-primary hover:underline"
                     >
                       Edit
                     </button>
@@ -157,7 +157,7 @@ export function LogsExplorer({
         {filtered.length === 0 ? <p className="text-slate-500 text-sm mt-4">No logs match these filters.</p> : null}
         <p className="text-xs text-slate-600 mt-6">
           Tip: open the{" "}
-          <Link href="/calendar" className="text-blue-400">
+          <Link href="/calendar" className="text-primary">
             calendar
           </Link>{" "}
           and click a day to jump here with that date prefilled.

@@ -33,7 +33,7 @@ export default async function DashboardPage() {
           <h2 className="text-sm font-medium text-slate-400 uppercase tracking-wide">Today</h2>
           <p className="mt-2 text-3xl font-semibold text-white">{todayLogs.length}</p>
           <p className="text-sm text-slate-500 mt-1">logs for {today}</p>
-          <Link href="/logs" className="inline-block mt-4 text-sm text-blue-400">
+          <Link href="/logs" className="mt-4 inline-block text-sm text-primary">
             Add or view logs →
           </Link>
         </div>
@@ -41,7 +41,7 @@ export default async function DashboardPage() {
           <h2 className="text-sm font-medium text-slate-400 uppercase tracking-wide">This week</h2>
           <p className="mt-2 text-3xl font-semibold text-white">{weekLogs.length}</p>
           <p className="text-sm text-slate-500 mt-1">team logs (Mon–Sun)</p>
-          <Link href="/weekly-summary" className="inline-block mt-4 text-sm text-blue-400">
+          <Link href="/weekly-summary" className="mt-4 inline-block text-sm text-primary">
             Open weekly summary →
           </Link>
         </div>
@@ -50,7 +50,7 @@ export default async function DashboardPage() {
           <p className="mt-2 text-slate-300 text-sm leading-relaxed">
             See which days have logs and jump in to add entries.
           </p>
-          <Link href="/calendar" className="inline-block mt-4 text-sm text-blue-400">
+          <Link href="/calendar" className="mt-4 inline-block text-sm text-primary">
             Open calendar →
           </Link>
         </div>

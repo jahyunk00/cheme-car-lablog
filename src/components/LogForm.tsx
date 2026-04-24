@@ -113,7 +113,7 @@ export function LogForm({
         />
       </div>
       {error ? <p className="text-sm text-red-400">{error}</p> : null}
-      <button type="submit" disabled={loading} className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white">
+      <button type="submit" disabled={loading} className="btn-primary px-4 py-2">
         {loading ? "Saving…" : "Save log"}
       </button>
     </form>

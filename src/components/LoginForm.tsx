@@ -114,7 +114,7 @@ export function LoginForm() {
       </button>
       <p className="text-center text-sm text-slate-500">
         New to LabLog?{" "}
-        <Link href="/register" className="text-blue-400 hover:text-blue-300 font-medium">
+        <Link href="/register" className="font-medium text-primary hover:underline">
           Create an account
         </Link>
       </p>

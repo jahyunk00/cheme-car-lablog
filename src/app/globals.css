@@ -2,22 +2,100 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Design tokens (light). Dark theme overrides when `html` has `.dark` (next-themes). */
 :root {
-  color-scheme: dark;
+  color-scheme: light;
+  --card: #ffffff;
+  --ring: #a1a1a1;
+  --input: #e5e5e5;
+  --muted: #f5f5f5;
+  --accent: #f5f5f5;
+  --border: #e5e5e5;
+  --radius: 0rem;
+  --chart-1: #737373;
+  --chart-2: #737373;
+  --chart-3: #737373;
+  --chart-4: #737373;
+  --chart-5: #737373;
+  --popover: #ffffff;
+  --primary: #737373;
+  --sidebar: #fafafa;
+  --secondary: #f5f5f5;
+  --background: #ffffff;
+  --foreground: #0a0a0a;
+  --destructive: #e7000b;
+  --shadow-blur: 0px;
+  --shadow-color: hsl(0 0% 0%);
+  --sidebar-ring: #a1a1a1;
+  --shadow-spread: 0px;
+  --shadow-opacity: 0;
+  --sidebar-accent: #f5f5f5;
+  --sidebar-border: #e5e5e5;
+  --card-foreground: #0a0a0a;
+  --shadow-offset-x: 0px;
+  --shadow-offset-y: 1px;
+  --sidebar-primary: #171717;
+  --muted-foreground: #717171;
+  --accent-foreground: #171717;
+  --popover-foreground: #0a0a0a;
+  --primary-foreground: #fafafa;
+  --sidebar-foreground: #0a0a0a;
+  --secondary-foreground: #171717;
+  --destructive-foreground: #f5f5f5;
+  --sidebar-accent-foreground: #171717;
+  --sidebar-primary-foreground: #fafafa;
 }
 
+.dark {
+  color-scheme: dark;
+  --card: #191919;
+  --ring: #737373;
+  --input: #525252;
+  --muted: #262626;
+  --accent: #404040;
+  --border: #383838;
+  --chart-1: #737373;
+  --chart-2: #737373;
+  --chart-3: #737373;
+  --chart-4: #737373;
+  --chart-5: #737373;
+  --popover: #262626;
+  --primary: #737373;
+  --sidebar: #171717;
+  --secondary: #262626;
+  --background: #0a0a0a;
+  --foreground: #fafafa;
+  --destructive: #ff6467;
+  --sidebar-ring: #525252;
+  --sidebar-accent: #262626;
+  --sidebar-border: #ffffff;
+  --card-foreground: #fafafa;
+  --sidebar-primary: #fafafa;
+  --muted-foreground: #a1a1a1;
+  --accent-foreground: #fafafa;
+  --popover-foreground: #fafafa;
+  --primary-foreground: #fafafa;
+  --sidebar-foreground: #fafafa;
+  --secondary-foreground: #fafafa;
+  --destructive-foreground: #262626;
+  --sidebar-accent-foreground: #fafafa;
+  --sidebar-primary-foreground: #171717;
+}
+
+/* Tailwind v4 `@theme inline { … }` is not used here (project is Tailwind v3). Colors are mapped in `tailwind.config.ts`. */
+
 body {
-  @apply bg-lab-bg text-slate-100 antialiased min-h-screen;
+  @apply bg-background text-foreground antialiased min-h-screen;
 }
 
 a {
-  @apply text-blue-400 hover:text-blue-300;
+  @apply text-primary underline-offset-2 hover:underline;
 }
 
 input,
 textarea,
 select {
-  @apply bg-lab-bg/80 border border-lab-border rounded-lg px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/35 focus:border-blue-500/40 transition-shadow;
+  @apply rounded-lg border border-input bg-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground transition-shadow focus:border-[var(--ring)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)] focus:ring-opacity-40;
 }
 
 button {
@@ -26,14 +104,14 @@ button {
 
 @layer components {
   .field-label {
-    @apply block text-sm font-medium text-slate-300;
+    @apply block text-sm font-medium text-muted-foreground;
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm shadow-blue-900/20 transition-colors hover:bg-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-lab-surface disabled:pointer-events-none disabled:opacity-45;
+    @apply inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-45;
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center rounded-lg border border-lab-border bg-transparent px-3 py-1.5 text-slate-300 transition-colors hover:bg-lab-border/50 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40;
+    @apply inline-flex items-center justify-center rounded-lg border border-border bg-transparent px-3 py-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background;
   }
 }

@@ -24,7 +24,7 @@ export function Calendar({
     <DayPicker
       showOutsideDays={showOutsideDays}
       className={cn(
-        "rounded-xl border border-lab-border bg-lab-surface p-3 text-slate-200 shadow-sm",
+        "rounded-xl border border-border bg-card p-3 text-card-foreground shadow-sm",
         "[--cell-size:2.25rem] sm:[--cell-size:2rem]",
         "[&_.rdp-week]:flex [&_.rdp-week]:w-full",
         className
@@ -41,31 +41,31 @@ export function Calendar({
         nav: cn(base.nav, "absolute inset-x-0 top-0 z-[1] flex w-full items-center justify-between"),
         button_previous: cn(
           base.button_previous,
-          "inline-flex size-9 items-center justify-center rounded-lg border border-lab-border bg-lab-bg text-slate-200 hover:bg-lab-border/50 sm:size-8"
+          "inline-flex size-9 items-center justify-center rounded-lg border border-border bg-background text-foreground hover:bg-accent sm:size-8"
         ),
         button_next: cn(
           base.button_next,
-          "inline-flex size-9 items-center justify-center rounded-lg border border-lab-border bg-lab-bg text-slate-200 hover:bg-lab-border/50 sm:size-8"
+          "inline-flex size-9 items-center justify-center rounded-lg border border-border bg-background text-foreground hover:bg-accent sm:size-8"
         ),
         weekdays: cn(base.weekdays, "flex"),
         weekday: cn(
           base.weekday,
-          "flex size-[var(--cell-size)] items-center justify-center p-0 text-xs font-medium text-slate-500"
+          "flex size-[var(--cell-size)] items-center justify-center p-0 text-xs font-medium text-muted-foreground"
         ),
         week: cn(base.week, "mt-1 flex w-full"),
         day: cn(base.day, "relative size-[var(--cell-size)] p-0 text-center text-sm"),
         day_button: cn(
           base.day_button,
-          "inline-flex size-[var(--cell-size)] items-center justify-center rounded-lg font-normal text-slate-200",
-          "hover:bg-slate-700/40",
-          "[.rdp-day.rdp-selected_&]:bg-blue-600 [.rdp-day.rdp-selected_&]:text-white [.rdp-day.rdp-selected_&]:hover:bg-blue-500",
-          "[.rdp-day.rdp-today_&]:font-semibold [.rdp-day.rdp-today_&]:text-blue-300",
-          "[.rdp-day.rdp-outside_&]:text-slate-600 [.rdp-day.rdp-outside_&]:opacity-70",
+          "inline-flex size-[var(--cell-size)] items-center justify-center rounded-lg font-normal text-foreground",
+          "hover:bg-accent/50",
+          "[.rdp-day.rdp-selected_&]:bg-primary [.rdp-day.rdp-selected_&]:text-primary-foreground [.rdp-day.rdp-selected_&]:hover:opacity-90",
+          "[.rdp-day.rdp-today_&]:font-semibold [.rdp-day.rdp-today_&]:text-primary",
+          "[.rdp-day.rdp-outside_&]:text-muted-foreground [.rdp-day.rdp-outside_&]:opacity-70",
           "[.rdp-day.rdp-disabled_&]:pointer-events-none [.rdp-day.rdp-disabled_&]:opacity-30",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50"
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         ),
-        outside: cn(base.outside, "text-slate-600"),
-        today: cn(base.today, "text-blue-300"),
+        outside: cn(base.outside, "text-muted-foreground"),
+        today: cn(base.today, "text-primary"),
         ...classNames,
       }}
       components={{

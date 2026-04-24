@@ -22,8 +22,8 @@ export function DottedSurface({ className, ...props }: DottedSurfaceProps) {
     const AMOUNTY = 46;
 
     const scene = new THREE.Scene();
-    const labBg = 0x0f1419;
-    scene.fog = new THREE.Fog(labBg, 4200, 15000);
+    const bgHex = isLight ? 0xffffff : 0x0a0a0a;
+    scene.fog = new THREE.Fog(bgHex, 4200, 15000);
 
     const camera = new THREE.PerspectiveCamera(
       55,
@@ -40,7 +40,7 @@ export function DottedSurface({ className, ...props }: DottedSurfaceProps) {
     });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setClearColor(labBg, 0);
+    renderer.setClearColor(bgHex, 0);
     renderer.domElement.style.display = "block";
 
     container.appendChild(renderer.domElement);

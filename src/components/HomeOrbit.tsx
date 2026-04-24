@@ -61,7 +61,7 @@ export function HomeOrbit({ isAuthed, userName }: { isAuthed: boolean; userName:
     <div className="relative min-h-screen bg-lab-bg">
       <DottedSurface />
       <header className="fixed inset-x-0 top-0 z-50 flex items-center justify-between border-b border-lab-border/80 bg-lab-bg/75 px-4 py-3 backdrop-blur-md">
-        <NextLink href="/" className="text-lg font-semibold tracking-tight text-white hover:text-blue-200">
+        <NextLink href="/" className="text-lg font-semibold tracking-tight text-foreground hover:text-primary">
           LabLog
         </NextLink>
         <nav className="flex items-center gap-2 sm:gap-3 text-sm">
@@ -89,7 +89,7 @@ export function HomeOrbit({ isAuthed, userName }: { isAuthed: boolean; userName:
               </NextLink>
               <NextLink
                 href="/register"
-                className="rounded-md bg-blue-600 px-3 py-1.5 font-medium text-white hover:bg-blue-500"
+                className="rounded-md bg-primary px-3 py-1.5 font-medium text-primary-foreground hover:opacity-90"
               >
                 Register
               </NextLink>

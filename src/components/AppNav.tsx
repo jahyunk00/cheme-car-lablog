@@ -23,8 +23,8 @@ export function AppNav() {
             href={l.href}
             className={
               active
-                ? "px-3 py-1.5 rounded-md bg-blue-600/20 text-white border border-blue-500/30"
-                : "px-3 py-1.5 rounded-md text-slate-300 hover:bg-lab-border/60 hover:text-white border border-transparent"
+                ? "rounded-md border border-border bg-accent px-3 py-1.5 text-accent-foreground"
+                : "rounded-md border border-transparent px-3 py-1.5 text-muted-foreground hover:bg-accent/60 hover:text-foreground"
             }
           >
             {l.label}
