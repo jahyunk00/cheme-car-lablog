@@ -10,14 +10,14 @@ export function createAdminClient(): SupabaseClient {
 
   if (!url) {
     throw new Error(
-      "Missing NEXT_PUBLIC_SUPABASE_URL. Add it to lablog/.env.local (next to package.json), then stop and restart `npm run dev`."
+      "Missing NEXT_PUBLIC_SUPABASE_URL. For local dev: add it to `.env.local`. For Vercel: Project Settings → Environment Variables (all environments), then redeploy."
     );
   }
   if (!serviceKey) {
     const hint = describeServiceRoleLineOnDisk();
     throw new Error(
       hint ??
-        "Missing SUPABASE_SERVICE_ROLE_KEY. In Supabase: Project Settings → API → copy service_role (secret). Put it in .env.local as one line: SUPABASE_SERVICE_ROLE_KEY=eyJ... Save the file, then restart `npm run dev`."
+        "Missing SUPABASE_SERVICE_ROLE_KEY. For local dev: add it to `.env.local`. For Vercel: paste the Supabase service_role key in Environment Variables, then redeploy."
     );
   }
 
