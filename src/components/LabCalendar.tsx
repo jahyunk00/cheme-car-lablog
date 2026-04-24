@@ -153,7 +153,7 @@ export function LabCalendar({
           }
           info.jsEvent.preventDefault();
           const d = info.event.startStr.slice(0, 10);
-          router.push(`/logs?date=${d}`);
+          router.push(`/logs/upload?date=${d}`);
         }}
         headerToolbar={{
           left: "prev,next today",

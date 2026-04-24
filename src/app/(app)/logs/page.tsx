@@ -1,17 +1,11 @@
-import { format } from "date-fns";
+import Link from "next/link";
 import { listAllLogs, listDirectoryUsers } from "@/lib/db";
-import { LogsExplorer, type LogRow } from "@/components/LogsExplorer";
+import { LogsList, type LogRow } from "@/components/LogsList";
 import { getSession } from "@/lib/session";
 
-type Props = { searchParams: Promise<{ date?: string }> };
-
-export default async function LogsPage({ searchParams }: Props) {
+export default async function LogsPage() {
   const session = await getSession();
   if (!session) return null;
-
-  const sp = await searchParams;
-  const initialDate =
-    sp?.date && /^\d{4}-\d{2}-\d{2}$/.test(sp.date) ? sp.date : format(new Date(), "yyyy-MM-dd");
 
   const directory = await listDirectoryUsers();
   const nameById = Object.fromEntries(directory.map((u) => [u.id, u.name]));
@@ -30,16 +24,16 @@ export default async function LogsPage({ searchParams }: Props) {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-white">Logs</h1>
-        <p className="text-slate-400 mt-1 text-sm">Create and edit entries for your team.</p>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold text-foreground">Logs</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Browse everything the team has logged.</p>
+        </div>
+        <Link href="/logs/upload" className="btn-primary inline-flex text-sm no-underline hover:no-underline">
+          Upload log
+        </Link>
       </div>
-      <LogsExplorer
-        logs={logs}
-        initialDate={initialDate}
-        currentUserId={session.sub}
-        role={session.role}
-      />
+      <LogsList logs={logs} currentUserId={session.sub} role={session.role} />
     </div>
   );
 }

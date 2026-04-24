@@ -63,22 +63,22 @@ export function LogForm({
         return;
       }
       onDone?.();
-      router.refresh();
+      router.push("/logs");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <form onSubmit={submit} className="space-y-4 rounded-xl border border-lab-border bg-lab-surface p-5">
-      <h2 className="text-lg font-medium text-white">{initial.id ? "Edit log" : "New log"}</h2>
+    <form onSubmit={submit} className="space-y-4 rounded-xl border border-border bg-card p-5">
+      <h2 className="text-lg font-medium text-foreground">{initial.id ? "Edit log" : "New log"}</h2>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1">
-          <label className="text-sm text-slate-300">Date</label>
+          <label className="field-label">Date</label>
           <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required className="w-full" />
         </div>
         <div className="space-y-1">
-          <label className="text-sm text-slate-300">Hours (optional)</label>
+          <label className="field-label">Hours (optional)</label>
           <input
             type="number"
             min={0}
@@ -91,11 +91,11 @@ export function LogForm({
         </div>
       </div>
       <div className="space-y-1">
-        <label className="text-sm text-slate-300">Title</label>
+        <label className="field-label">Title</label>
         <input value={title} onChange={(e) => setTitle(e.target.value)} required className="w-full" />
       </div>
       <div className="space-y-1">
-        <label className="text-sm text-slate-300">Description</label>
+        <label className="field-label">Description</label>
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
@@ -104,7 +104,7 @@ export function LogForm({
         />
       </div>
       <div className="space-y-1">
-        <label className="text-sm text-slate-300">Tags (comma-separated)</label>
+        <label className="field-label">Tags (comma-separated)</label>
         <input
           value={tags}
           onChange={(e) => setTags(e.target.value)}

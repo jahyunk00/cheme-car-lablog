@@ -1,0 +1,72 @@
+import { format } from "date-fns";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { LogForm, type LogPayload } from "@/components/LogForm";
+import { getLog } from "@/lib/db";
+import { getSession } from "@/lib/session";
+
+type Props = { searchParams: Promise<{ date?: string; edit?: string }> };
+
+export default async function LogUploadPage({ searchParams }: Props) {
+  const session = await getSession();
+  if (!session) return null;
+
+  const sp = await searchParams;
+  const today = format(new Date(), "yyyy-MM-dd");
+  const dateParam =
+    sp?.date && /^\d{4}-\d{2}-\d{2}$/.test(sp.date) ? sp.date : today;
+
+  let initial: LogPayload;
+  let formKey: string;
+
+  if (sp?.edit) {
+    const log = await getLog(sp.edit);
+    if (!log) {
+      redirect("/logs/upload");
+    }
+    const canEdit = log.userId === session.sub || session.role === "admin";
+    if (!canEdit) {
+      redirect("/logs");
+    }
+    initial = {
+      id: log.id,
+      date: log.date,
+      title: log.title,
+      description: log.description,
+      tags: log.tags.join(", "),
+      hours: log.hours != null ? String(log.hours) : "",
+    };
+    formKey = `edit-${log.id}`;
+  } else {
+    initial = {
+      date: dateParam,
+      title: "",
+      description: "",
+      tags: "",
+      hours: "",
+    };
+    formKey = `new-${dateParam}`;
+  }
+
+  return (
+    <div className="mx-auto max-w-2xl space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold text-foreground">
+            {initial.id ? "Edit log" : "Upload log"}
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {initial.id ? "Update this entry, then save." : "Add a dated lab entry for your team."}
+          </p>
+        </div>
+        <Link
+          href="/logs"
+          className="text-sm text-primary underline-offset-2 hover:underline"
+        >
+          View all logs
+        </Link>
+      </div>
+      <LogForm key={formKey} initial={initial} />
+    </div>
+  );
+}

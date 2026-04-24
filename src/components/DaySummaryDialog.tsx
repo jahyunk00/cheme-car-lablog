@@ -89,11 +89,18 @@ export function DaySummaryDialog({
 
         <div className="flex flex-wrap gap-2 justify-end border-t border-lab-border px-5 py-4">
           <Link
-            href={`/logs?date=${dateStr}`}
-            className="inline-flex items-center rounded-lg border border-lab-border px-4 py-2 text-sm text-slate-200 hover:bg-lab-border/30"
+            href="/logs"
+            className="inline-flex items-center rounded-lg border border-border px-4 py-2 text-sm text-foreground hover:bg-accent"
             onClick={onClose}
           >
-            Open in Logs
+            View all logs
+          </Link>
+          <Link
+            href={`/logs/upload?date=${dateStr}`}
+            className="inline-flex items-center rounded-lg border border-border px-4 py-2 text-sm text-foreground hover:bg-accent"
+            onClick={onClose}
+          >
+            Upload log for this day
           </Link>
           <button
             type="button"
