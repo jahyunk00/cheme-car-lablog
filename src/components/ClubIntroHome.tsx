@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart2, Calendar, ChevronRight, FileText, LayoutDashboard } from "lucide-react";
+import { BarChart2, Calendar, ChevronRight, FileText, LayoutDashboard, ShoppingCart } from "lucide-react";
 import Image from "next/image";
 import NextLink from "next/link";
 
@@ -10,6 +10,7 @@ const appLinks = [
   { href: "/dashboard", label: "Dashboard", description: "Overview, feed, and quick week snapshot.", icon: LayoutDashboard },
   { href: "/calendar", label: "Calendar", description: "Meetings, deadlines, and lab milestones.", icon: Calendar },
   { href: "/logs", label: "Logs", description: "Team lab log and your entries.", icon: FileText },
+  { href: "/item-requests", label: "Item requests", description: "Parts and supplies: quantity, price, link, and use.", icon: ShoppingCart },
   { href: "/weekly-summary", label: "Weekly summary", description: "Roll-up of the week for meetings.", icon: BarChart2 },
 ] as const;
 
@@ -92,7 +93,7 @@ export function ClubIntroHome({ isAuthed, userName }: { isAuthed: boolean; userN
         <div className="mt-12 rounded-xl border border-lab-border bg-muted/15 p-5 sm:p-6">
           <h2 className="text-lg font-semibold text-foreground">LabLog</h2>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            This site is our shared logbook and schedule: check-ins, experiment notes, calendar events, and weekly
+            This site is our shared logbook and schedule: experiment notes, calendar events, item requests, and weekly
             summaries for members and board. Sign in to see everything your role allows.
           </p>
 

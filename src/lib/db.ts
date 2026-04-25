@@ -1,5 +1,6 @@
 import { parseLablogAvatarId } from "./avatar-ids";
-import type { AttendanceEntry, CalendarEventEntry, FeedItem, LogEntry, User, UserRole } from "./types";
+import { isItemRequestPurpose } from "./item-request-purpose";
+import type { CalendarEventEntry, FeedItem, ItemRequestEntry, LogEntry, User, UserRole } from "./types";
 import { parseLogCategory } from "./log-categories";
 import { createAdminClient } from "@/utils/supabase/admin";
 
@@ -103,9 +104,43 @@ function mapLog(row: {
     tags: row.tags ?? [],
     hours: Number.isFinite(hours) ? hours : null,
     category: parseLogCategory(row.category ?? undefined),
+    participantUserIds: [],
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
+}
+
+export async function listParticipantIdsByLogIds(logIds: string[]): Promise<Map<string, string[]>> {
+  const m = new Map<string, string[]>();
+  if (logIds.length === 0) return m;
+  const { data, error } = await admin()
+    .from("lablog_log_participants")
+    .select("log_id, user_id")
+    .in("log_id", logIds);
+  if (error) throw new Error(error.message);
+  for (const row of data ?? []) {
+    const r = row as { log_id: string; user_id: string };
+    if (!m.has(r.log_id)) m.set(r.log_id, []);
+    m.get(r.log_id)!.push(r.user_id);
+  }
+  return m;
+}
+
+async function withLogParticipants(logs: LogEntry[]): Promise<LogEntry[]> {
+  if (logs.length === 0) return [];
+  const map = await listParticipantIdsByLogIds(logs.map((l) => l.id));
+  return logs.map((l) => ({ ...l, participantUserIds: map.get(l.id) ?? [] }));
+}
+
+/** Replaces all participant rows; `userIds` should not include the log author. */
+export async function replaceLogParticipants(logId: string, userIds: string[], authorId: string) {
+  const unique = [...new Set(userIds)].filter((id) => id && id.length > 0 && id !== authorId);
+  const { error: delErr } = await admin().from("lablog_log_participants").delete().eq("log_id", logId);
+  if (delErr) throw new Error(delErr.message);
+  if (unique.length === 0) return;
+  const rows = unique.map((user_id) => ({ log_id: logId, user_id }));
+  const { error: insErr } = await admin().from("lablog_log_participants").insert(rows);
+  if (insErr) throw new Error(insErr.message);
 }
 
 function mapFeed(row: {
@@ -184,7 +219,8 @@ export async function listLogsForUser(userId: string): Promise<LogEntry[]> {
     .eq("user_id", userId)
     .order("log_date", { ascending: false });
   if (error) throw new Error(error.message);
-  return (data ?? []).map((r) => mapLog(r as Parameters<typeof mapLog>[0]));
+  const base = (data ?? []).map((r) => mapLog(r as Parameters<typeof mapLog>[0]));
+  return withLogParticipants(base);
 }
 
 export async function listAllLogs(): Promise<LogEntry[]> {
@@ -194,14 +230,17 @@ export async function listAllLogs(): Promise<LogEntry[]> {
     .order("log_date", { ascending: false })
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
-  return (data ?? []).map((r) => mapLog(r as Parameters<typeof mapLog>[0]));
+  const base = (data ?? []).map((r) => mapLog(r as Parameters<typeof mapLog>[0]));
+  return withLogParticipants(base);
 }
 
 export async function getLog(id: string): Promise<LogEntry | undefined> {
   const { data, error } = await admin().from("lablog_logs").select("*").eq("id", id).maybeSingle();
   if (error) throw new Error(error.message);
   if (!data) return undefined;
-  return mapLog(data as Parameters<typeof mapLog>[0]);
+  const log = mapLog(data as Parameters<typeof mapLog>[0]);
+  const p = await listParticipantIdsByLogIds([id]);
+  return { ...log, participantUserIds: p.get(id) ?? [] };
 }
 
 export async function upsertUser(user: User) {
@@ -333,117 +372,65 @@ export async function listFeed(limit = 30): Promise<FeedItem[]> {
   return (data ?? []).map((r) => mapFeed(r as Parameters<typeof mapFeed>[0]));
 }
 
-function mapAttendance(row: {
+function mapItemRequest(row: {
   id: string;
   user_id: string;
-  attended_date: string;
+  name: string;
+  quantity: number;
+  price: string;
+  link: string;
+  purpose: string;
   created_at: string;
-}): AttendanceEntry {
-  const d = row.attended_date;
-  const dateStr = typeof d === "string" && d.length >= 10 ? d.slice(0, 10) : String(d).slice(0, 10);
+}): ItemRequestEntry {
+  const purpose = isItemRequestPurpose(row.purpose) ? row.purpose : "other";
   return {
     id: row.id,
     userId: row.user_id,
-    attendedDate: dateStr,
+    name: row.name,
+    quantity: row.quantity,
+    price: row.price ?? "",
+    link: row.link ?? "",
+    purpose,
     createdAt: row.created_at,
   };
 }
 
-/** Stable primary key for upserts (user + calendar day). */
-export function attendanceRowId(userId: string, attendedDate: string) {
-  return `${userId}__${attendedDate}`;
-}
-
-export async function recordAttendance(userId: string, attendedDate: string): Promise<AttendanceEntry> {
-  const id = attendanceRowId(userId, attendedDate);
-  const now = new Date().toISOString();
-  const { error } = await admin().from("lablog_attendance").upsert(
-    {
-      id,
-      user_id: userId,
-      attended_date: attendedDate,
-      created_at: now,
-    },
-    { onConflict: "user_id,attended_date" }
-  );
-  if (error) throw new Error(error.message);
-  const row = await getAttendanceDay(userId, attendedDate);
-  if (!row) throw new Error("Could not read attendance after save.");
-  return row;
-}
-
-export async function getAttendanceDay(
-  userId: string,
-  attendedDate: string
-): Promise<AttendanceEntry | undefined> {
+export async function listItemRequestsBetween(
+  fromInclusiveUtc: string,
+  toInclusiveUtc: string
+): Promise<ItemRequestEntry[]> {
   const { data, error } = await admin()
-    .from("lablog_attendance")
+    .from("lablog_item_requests")
     .select("*")
-    .eq("user_id", userId)
-    .eq("attended_date", attendedDate)
-    .maybeSingle();
+    .gte("created_at", fromInclusiveUtc)
+    .lte("created_at", toInclusiveUtc)
+    .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
-  if (!data) return undefined;
-  return mapAttendance(data as Parameters<typeof mapAttendance>[0]);
+  return (data ?? []).map((r) => mapItemRequest(r as Parameters<typeof mapItemRequest>[0]));
 }
 
-export async function removeAttendance(userId: string, attendedDate: string) {
-  const { error } = await admin()
-    .from("lablog_attendance")
-    .delete()
-    .eq("user_id", userId)
-    .eq("attended_date", attendedDate);
+export async function insertItemRequest(entry: ItemRequestEntry) {
+  const { error } = await admin().from("lablog_item_requests").insert({
+    id: entry.id,
+    user_id: entry.userId,
+    name: entry.name,
+    quantity: entry.quantity,
+    price: entry.price,
+    link: entry.link,
+    purpose: entry.purpose,
+    created_at: entry.createdAt,
+  });
   if (error) throw new Error(error.message);
 }
 
-export async function listAttendanceForUser(
-  userId: string,
-  from: string,
-  to: string
-): Promise<AttendanceEntry[]> {
+export async function listRecentItemRequests(limit = 100): Promise<ItemRequestEntry[]> {
   const { data, error } = await admin()
-    .from("lablog_attendance")
+    .from("lablog_item_requests")
     .select("*")
-    .eq("user_id", userId)
-    .gte("attended_date", from)
-    .lte("attended_date", to)
-    .order("attended_date", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(Math.min(Math.max(limit, 1), 500));
   if (error) throw new Error(error.message);
-  return (data ?? []).map((r) => mapAttendance(r as Parameters<typeof mapAttendance>[0]));
-}
-
-export async function listAttendanceBetween(from: string, to: string): Promise<AttendanceEntry[]> {
-  const { data, error } = await admin()
-    .from("lablog_attendance")
-    .select("*")
-    .gte("attended_date", from)
-    .lte("attended_date", to)
-    .order("attended_date", { ascending: false });
-  if (error) throw new Error(error.message);
-  return (data ?? []).map((r) => mapAttendance(r as Parameters<typeof mapAttendance>[0]));
-}
-
-/** If `lablog_attendance` is missing or PostgREST errors, return [] (prevents 500 on /attendance). */
-export async function listAttendanceForUserSafe(
-  userId: string,
-  from: string,
-  to: string
-): Promise<AttendanceEntry[]> {
-  try {
-    return await listAttendanceForUser(userId, from, to);
-  } catch (e) {
-    console.warn("[lablog] listAttendanceForUser:", e);
-    return [];
-  }
-}
-
-export async function listAttendanceBetweenSafe(from: string, to: string): Promise<AttendanceEntry[]> {
-  try {
-    return await listAttendanceBetween(from, to);
-  } catch (e) {
-    console.warn("[lablog] listAttendanceBetween:", e);
-    return [];
-  }
+  return (data ?? []).map((r) => mapItemRequest(r as Parameters<typeof mapItemRequest>[0]));
 }
 
 function mapCalendarEvent(row: {

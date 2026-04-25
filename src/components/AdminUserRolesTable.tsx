@@ -117,7 +117,7 @@ export function AdminUserRolesTable({
       </div>
       <p className="text-xs text-muted-foreground leading-relaxed">
         New accounts start as lab members. After you set someone to board, they should log out and back in to pick up
-        metrics and attendance views. Admin accounts cannot be edited here.
+        metrics and item-request visibility. Admin accounts cannot be edited here.
       </p>
     </div>
   );

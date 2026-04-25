@@ -1,15 +1,8 @@
 import type { LablogAvatarId } from "@/lib/avatar-ids";
+import type { ItemRequestPurpose } from "./item-request-purpose";
 import type { LogCategory } from "@/lib/log-categories";
 
 export type UserRole = "admin" | "board" | "member";
-
-/** One lab check-in for a calendar day (user marked present). */
-export type AttendanceEntry = {
-  id: string;
-  userId: string;
-  attendedDate: string;
-  createdAt: string;
-};
 
 export type User = {
   id: string;
@@ -29,8 +22,21 @@ export type LogEntry = {
   tags: string[];
   hours: number | null;
   category: LogCategory;
+  /** Teammates who participated besides the person who filed the log (user_id). */
+  participantUserIds: string[];
   createdAt: string;
   updatedAt: string;
+};
+
+export type ItemRequestEntry = {
+  id: string;
+  userId: string;
+  name: string;
+  quantity: number;
+  price: string;
+  link: string;
+  purpose: ItemRequestPurpose;
+  createdAt: string;
 };
 
 export type FeedItem = {

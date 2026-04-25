@@ -18,7 +18,7 @@ function buildNavLinks(role: UserRole): AppNavLink[] {
     { href: "/dashboard", label: "Dashboard" },
     { href: "/calendar", label: "Calendar" },
     { href: "/logs", label: "Logs" },
-    { href: "/attendance", label: "Lab check-in" },
+    { href: "/item-requests", label: "Item requests" },
   ];
   if (canViewTeamMetrics(role)) {
     core.push({ href: "/weekly-summary", label: "Weekly summary" });

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { listAllLogs, saveLog } from "@/lib/db";
+import { getLog, listAllLogs, replaceLogParticipants, saveLog } from "@/lib/db";
 import { LOG_CATEGORIES } from "@/lib/log-categories";
 import { getSession } from "@/lib/session";
 import type { LogEntry } from "@/lib/types";
@@ -12,6 +12,8 @@ const createSchema = z.object({
   tags: z.array(z.string()).default([]),
   hours: z.number().min(0).max(999).nullable().optional(),
   category: z.enum(LOG_CATEGORIES),
+  /** Teammate user IDs who also participated (author is the session user). */
+  participantUserIds: z.array(z.string().min(1)).max(50).default([]),
 });
 
 export async function GET(request: Request) {
@@ -64,6 +66,7 @@ export async function POST(request: Request) {
     tags: parsed.data.tags ?? [],
     hours: parsed.data.hours ?? null,
     category: parsed.data.category,
+    participantUserIds: [],
     createdAt: now,
     updatedAt: now,
   };
@@ -75,11 +78,13 @@ export async function POST(request: Request) {
       logId: id,
       message: `${session.name} logged “${log.title}”`,
     });
+    await replaceLogParticipants(id, parsed.data.participantUserIds, session.sub);
   } catch (err) {
     console.error("[api/logs POST]", err);
     const message = err instanceof Error ? err.message : "Could not save to database.";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 
-  return NextResponse.json({ log });
+  const saved = await getLog(id);
+  return NextResponse.json({ log: saved });
 }

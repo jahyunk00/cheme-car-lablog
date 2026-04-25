@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { deleteLog, getLog, saveLog } from "@/lib/db";
+import { deleteLog, getLog, replaceLogParticipants, saveLog } from "@/lib/db";
 import { LOG_CATEGORIES } from "@/lib/log-categories";
 import { getSession } from "@/lib/session";
 
@@ -11,6 +11,7 @@ const patchSchema = z.object({
   tags: z.array(z.string()).optional(),
   hours: z.number().min(0).max(999).nullable().optional(),
   category: z.enum(LOG_CATEGORIES).optional(),
+  participantUserIds: z.array(z.string().min(1)).max(50).optional(),
 });
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -34,9 +35,15 @@ export async function PATCH(request: Request, context: RouteContext) {
     return NextResponse.json({ error: "Invalid body" }, { status: 400 });
   }
 
-  const next: typeof existing = {
+  const p = parsed.data;
+  const next = {
     ...existing,
-    ...parsed.data,
+    date: p.date ?? existing.date,
+    title: p.title ?? existing.title,
+    description: p.description !== undefined ? p.description : existing.description,
+    tags: p.tags !== undefined ? p.tags : existing.tags,
+    hours: p.hours !== undefined ? p.hours : existing.hours,
+    category: p.category ?? existing.category,
     updatedAt: new Date().toISOString(),
   };
 
@@ -47,13 +54,17 @@ export async function PATCH(request: Request, context: RouteContext) {
       logId: id,
       message: `${session.name} updated “${next.title}”`,
     });
+    if (p.participantUserIds !== undefined) {
+      await replaceLogParticipants(id, p.participantUserIds, existing.userId);
+    }
   } catch (err) {
     console.error("[api/logs PATCH]", err);
     const message = err instanceof Error ? err.message : "Could not save to database.";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 
-  return NextResponse.json({ log: next });
+  const saved = await getLog(id);
+  return NextResponse.json({ log: saved });
 }
 
 export async function DELETE(_request: Request, context: RouteContext) {

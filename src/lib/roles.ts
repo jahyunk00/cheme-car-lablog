@@ -8,7 +8,7 @@ export function isBoard(role: UserRole): boolean {
   return role === "board";
 }
 
-/** Board members and admins can see team-wide metrics, attendance rollups, and activity feed. */
+/** Board members and admins can see team-wide metrics and the activity feed. */
 export function canViewTeamMetrics(role: UserRole): boolean {
   return role === "admin" || role === "board";
 }

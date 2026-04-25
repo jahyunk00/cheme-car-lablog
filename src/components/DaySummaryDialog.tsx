@@ -14,6 +14,7 @@ export type DayLogRow = {
   description: string;
   tags: string[];
   category: LogCategory;
+  participantNames: string[];
 };
 
 export function DaySummaryDialog({
@@ -94,6 +95,9 @@ export function DaySummaryDialog({
                   ) : null}
                   {log.description ? (
                     <p className="text-sm text-slate-400 mt-2 whitespace-pre-wrap">{log.description}</p>
+                  ) : null}
+                  {log.participantNames.length > 0 ? (
+                    <p className="mt-2 text-xs text-slate-500">With: {log.participantNames.join(", ")}</p>
                   ) : null}
                 </li>
               ))}

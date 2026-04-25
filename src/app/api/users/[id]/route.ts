@@ -12,7 +12,7 @@ const ROLE_CHECK_DB_FIX =
   "Your Supabase project still has an old check on lablog_users.role that does not allow 'board'. In Supabase → SQL Editor, run:\n\n" +
   "alter table public.lablog_users drop constraint if exists lablog_users_role_check;\n" +
   "alter table public.lablog_users add constraint lablog_users_role_check check (role in ('admin', 'board', 'member'));\n\n" +
-  "Then try again. If check-in or team attendance fails, also run migration 007 (lablog_attendance) from the repo.";
+  "Then try again. If you have not applied board role SQL yet, run migration 007 or 008 from the repo in Supabase.";
 
 function isRoleCheckViolation(message: string): boolean {
   return /lablog_users_role_check|23514|role_check/i.test(message);

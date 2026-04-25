@@ -14,6 +14,8 @@ export type LogRow = {
   tags: string[];
   hours: number | null;
   category: LogCategory;
+  /** Display names for teammates listed on the log (besides the author). */
+  participantNames: string[];
   createdAt: string;
 };
 
@@ -57,6 +59,11 @@ export function LogsList({
                   ) : null}
                   {log.description ? (
                     <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">{log.description}</p>
+                  ) : null}
+                  {log.participantNames.length > 0 ? (
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      With: {log.participantNames.join(", ")}
+                    </p>
                   ) : null}
                 </div>
                 {canEdit ? (

@@ -6,8 +6,8 @@ import { CopyTextButton } from "@/components/CopyTextButton";
 import {
   listAllCalendarEvents,
   listAllLogs,
-  listAttendanceBetweenSafe,
   listDirectoryUsers,
+  listItemRequestsBetween,
 } from "@/lib/db";
 import { isAdmin } from "@/lib/roles";
 import { getSession } from "@/lib/session";
@@ -30,15 +30,14 @@ export default async function AdminWeekReportPage({ searchParams }: Props) {
   const startStr = format(start, "yyyy-MM-dd");
   const endStr = format(end, "yyyy-MM-dd");
 
-  const [allLogs, directory, allEvents] = await Promise.all([
+  const [allLogs, directory, allEvents, itemRequests] = await Promise.all([
     listAllLogs(),
     listDirectoryUsers(),
     listAllCalendarEvents(),
+    listItemRequestsBetween(`${startStr}T00:00:00.000Z`, `${endStr}T23:59:59.999Z`),
   ]);
   const logs = allLogs.filter((l) => l.date >= startStr && l.date <= endStr);
   const nameById = Object.fromEntries(directory.map((u) => [u.id, u.name]));
-
-  const attendance = await listAttendanceBetweenSafe(startStr, endStr);
 
   const report = buildWeeklyNarrativeReport({
     weekStart: startStr,
@@ -46,7 +45,7 @@ export default async function AdminWeekReportPage({ searchParams }: Props) {
     logs,
     nameById,
     events: allEvents,
-    attendance,
+    itemRequests,
   });
 
   const prev = format(subWeeks(anchor, 1), "yyyy-MM-dd");
@@ -58,8 +57,8 @@ export default async function AdminWeekReportPage({ searchParams }: Props) {
         <div>
           <h1 className="text-2xl font-semibold text-foreground">Weekly narrative report</h1>
           <p className="mt-1 text-sm text-muted-foreground text-pretty max-w-prose">
-            Admin-only. This page builds a written summary of the selected week from logs, calendar items that touch
-            the week, lab check-ins, and who contributed—no external AI required.
+            Admin-only. This page builds a written summary of the selected week from logs, calendar items, item
+            requests, and who contributed—no external AI required.
           </p>
         </div>
         <div className="flex gap-2 text-sm">

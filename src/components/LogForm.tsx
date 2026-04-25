@@ -2,7 +2,7 @@
 
 import { ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -15,24 +15,31 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { LOG_CATEGORIES, type LogCategory } from "@/lib/log-categories";
 
+export type TeammateOption = { id: string; name: string };
+
 export type LogPayload = {
   id?: string;
+  /** Log author (for saving participants; usually the current user). */
+  authorId: string;
   date: string;
   category: LogCategory;
   title: string;
   description: string;
   hours: string;
+  participantUserIds: string[];
 };
 
 export function LogForm({
   initial,
   onDone,
   isAdmin = false,
+  teammates,
 }: {
   initial: LogPayload;
   onDone?: () => void;
   /** When true, editing shows a Delete log control (API allows delete for admins only). */
   isAdmin?: boolean;
+  teammates: TeammateOption[];
 }) {
   const router = useRouter();
   const [date, setDate] = useState(initial.date);
@@ -40,9 +47,26 @@ export function LogForm({
   const [title, setTitle] = useState(initial.title);
   const [description, setDescription] = useState(initial.description);
   const [hours, setHours] = useState(initial.hours);
+  const [participantSet, setParticipantSet] = useState<Set<string>>(
+    () => new Set(initial.participantUserIds)
+  );
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  const coAuthorChoices = useMemo(
+    () => teammates.filter((t) => t.id !== initial.authorId),
+    [teammates, initial.authorId]
+  );
+
+  function toggleParticipant(id: string) {
+    setParticipantSet((prev) => {
+      const n = new Set(prev);
+      if (n.has(id)) n.delete(id);
+      else n.add(id);
+      return n;
+    });
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -55,8 +79,9 @@ export function LogForm({
         return;
       }
 
+      const participantUserIds = [...participantSet];
       const isEdit = Boolean(initial.id);
-      const body = { date, category, title, description, hours: hoursNum };
+      const body = { date, category, title, description, hours: hoursNum, participantUserIds };
       let res: Response;
       try {
         res = await fetch(isEdit ? `/api/logs/${initial.id}` : "/api/logs", {
@@ -158,10 +183,7 @@ export function LogForm({
           <DropdownMenuContent align="start" className="min-w-[var(--radix-dropdown-menu-trigger-width)]">
             <DropdownMenuLabel>Subsystem</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuRadioGroup
-              value={category}
-              onValueChange={(v) => setCategory(v as LogCategory)}
-            >
+            <DropdownMenuRadioGroup value={category} onValueChange={(v) => setCategory(v as LogCategory)}>
               {LOG_CATEGORIES.map((c) => (
                 <DropdownMenuRadioItem key={c} value={c}>
                   {c}
@@ -185,6 +207,30 @@ export function LogForm({
           className="w-full resize-y min-h-[100px]"
         />
       </div>
+
+      {coAuthorChoices.length > 0 ? (
+        <div className="space-y-2">
+          <span className="field-label">Also involved (optional)</span>
+          <p className="text-xs text-muted-foreground">Teammates who helped with this activity besides whoever files the log.</p>
+          <ul className="max-h-48 space-y-2 overflow-y-auto rounded-lg border border-border bg-muted/20 p-3">
+            {coAuthorChoices.map((t) => (
+              <li key={t.id} className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id={`p-${t.id}`}
+                  checked={participantSet.has(t.id)}
+                  onChange={() => toggleParticipant(t.id)}
+                  className="h-4 w-4 rounded border-border"
+                />
+                <label htmlFor={`p-${t.id}`} className="text-sm text-foreground">
+                  {t.name}
+                </label>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
       {error ? <p className="text-sm text-red-400">{error}</p> : null}
       <div className="flex flex-wrap items-center gap-3">
         <button type="submit" disabled={loading || deleting} className="btn-primary px-4 py-2">

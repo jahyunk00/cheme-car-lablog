@@ -30,6 +30,7 @@ export default async function LogsPage({ searchParams }: Props) {
     tags: l.tags,
     hours: l.hours,
     category: l.category,
+    participantNames: l.participantUserIds.map((id) => nameById[id] ?? id),
     createdAt: l.createdAt,
   }));
 

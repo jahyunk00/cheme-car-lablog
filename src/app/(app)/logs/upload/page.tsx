@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 import { redirect } from "next/navigation";
 import { LogForm, type LogPayload } from "@/components/LogForm";
-import { getLog } from "@/lib/db";
+import { getLog, listDirectoryUsers } from "@/lib/db";
 import { getSession } from "@/lib/session";
 
 type Props = { searchParams: Promise<{ date?: string; edit?: string }> };
@@ -14,6 +14,9 @@ export default async function LogUploadPage({ searchParams }: Props) {
   const today = format(new Date(), "yyyy-MM-dd");
   const dateParam =
     sp?.date && /^\d{4}-\d{2}-\d{2}$/.test(sp.date) ? sp.date : today;
+
+  const directory = await listDirectoryUsers();
+  const teammates = directory.map((u) => ({ id: u.id, name: u.name }));
 
   let initial: LogPayload;
   let formKey: string;
@@ -29,20 +32,24 @@ export default async function LogUploadPage({ searchParams }: Props) {
     }
     initial = {
       id: log.id,
+      authorId: log.userId,
       date: log.date,
       category: log.category,
       title: log.title,
       description: log.description,
       hours: log.hours != null ? String(log.hours) : "",
+      participantUserIds: log.participantUserIds,
     };
     formKey = `edit-${log.id}`;
   } else {
     initial = {
+      authorId: session.sub,
       date: dateParam,
       category: "Other",
       title: "",
       description: "",
       hours: "",
+      participantUserIds: [],
     };
     formKey = `new-${dateParam}`;
   }
@@ -57,7 +64,7 @@ export default async function LogUploadPage({ searchParams }: Props) {
           {initial.id ? "Update this entry, then save." : "Add a dated lab entry for your team."}
         </p>
       </div>
-      <LogForm key={formKey} initial={initial} isAdmin={session.role === "admin"} />
+      <LogForm key={formKey} initial={initial} isAdmin={session.role === "admin"} teammates={teammates} />
     </div>
   );
 }

@@ -27,6 +27,7 @@ export default async function CalendarPage() {
     description: l.description,
     tags: l.tags,
     category: l.category,
+    participantNames: l.participantUserIds.map((id) => nameById[id] ?? id),
   }));
 
   return (

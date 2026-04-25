@@ -18,7 +18,7 @@ export default async function AdminRolesPage() {
         <h1 className="text-2xl font-semibold text-foreground">Team roles</h1>
         <p className="mt-1 text-sm text-muted-foreground text-pretty">
           Promote trusted teammates to <strong className="text-foreground">Board member</strong> so they can see
-          weekly summaries, team attendance, activity feed, and the user directory API. Everyone else stays a{" "}
+          weekly summaries, item requests, activity feed, and the user directory API. Everyone else stays a{" "}
           <strong className="text-foreground">Lab member</strong> with normal lab access.
         </p>
       </div>

@@ -1,6 +1,7 @@
 import { format, parseISO } from "date-fns";
 
-import type { AttendanceEntry, CalendarEventEntry, LogEntry } from "./types";
+import { ITEM_REQUEST_PURPOSE_LABEL } from "./item-request-purpose";
+import type { CalendarEventEntry, ItemRequestEntry, LogEntry } from "./types";
 
 export function formatWeekRangeTitle(startStr: string, endStr: string): string {
   const a = parseISO(`${startStr}T12:00:00`);
@@ -16,9 +17,13 @@ function eventTouchesWeek(e: CalendarEventEntry, weekStart: string, weekEnd: str
   return e.startDate <= weekEnd && eEnd >= weekStart;
 }
 
+/** Author plus anyone attached as a participant on the log. */
+export function contributorIdsForLog(l: LogEntry): string[] {
+  return [...new Set([l.userId, ...l.participantUserIds])];
+}
+
 /**
- * Plain-text narrative for admins: what happened in the lab week and who contributed.
- * Built from logs, optional calendar events and attendance (no external AI).
+ * Plain-text narrative for admins: week activity, calendar, item requests (no external AI).
  */
 export function buildWeeklyNarrativeReport(options: {
   weekStart: string;
@@ -26,9 +31,9 @@ export function buildWeeklyNarrativeReport(options: {
   logs: LogEntry[];
   nameById: Record<string, string>;
   events: CalendarEventEntry[];
-  attendance: AttendanceEntry[];
+  itemRequests: ItemRequestEntry[];
 }): string {
-  const { weekStart, weekEnd, logs, nameById, events, attendance } = options;
+  const { weekStart, weekEnd, logs, nameById, events, itemRequests } = options;
   const title = formatWeekRangeTitle(weekStart, weekEnd);
   const lines: string[] = [];
 
@@ -40,7 +45,10 @@ export function buildWeeklyNarrativeReport(options: {
     (a, b) => a.date.localeCompare(b.date) || a.createdAt.localeCompare(b.createdAt)
   );
 
-  const contributorIds = new Set(sortedLogs.map((l) => l.userId));
+  const contributorSet = new Set<string>();
+  for (const log of sortedLogs) {
+    for (const id of contributorIdsForLog(log)) contributorSet.add(id);
+  }
   const totalHours = sortedLogs.reduce((s, l) => s + (l.hours != null && Number.isFinite(l.hours) ? l.hours : 0), 0);
 
   lines.push("SUMMARY");
@@ -50,7 +58,7 @@ export function buildWeeklyNarrativeReport(options: {
     );
   } else {
     lines.push(
-      `The team filed ${sortedLogs.length} log ${sortedLogs.length === 1 ? "entry" : "entries"} across ${contributorIds.size} contributor${contributorIds.size === 1 ? "" : "s"}.` +
+      `The team filed ${sortedLogs.length} log ${sortedLogs.length === 1 ? "entry" : "entries"} involving ${contributorSet.size} teammate${contributorSet.size === 1 ? "" : "s"} (authors and listed participants).` +
         (totalHours > 0
           ? ` Reported time on logs totals about ${totalHours.toFixed(1)} hours (sum of hours fields where provided).`
           : "")
@@ -60,20 +68,23 @@ export function buildWeeklyNarrativeReport(options: {
 
   if (sortedLogs.length > 0) {
     lines.push("CONTRIBUTIONS BY TEAMMATE");
-    const byUser = new Map<string, LogEntry[]>();
-    for (const log of sortedLogs) {
-      if (!byUser.has(log.userId)) byUser.set(log.userId, []);
-      byUser.get(log.userId)!.push(log);
-    }
-    const sortedUsers = [...contributorIds].sort(
-      (a, b) => (byUser.get(b)?.length ?? 0) - (byUser.get(a)?.length ?? 0)
+    const sortedUsers = [...contributorSet].sort((a, b) =>
+      (nameById[a] ?? a).localeCompare(nameById[b] ?? b)
     );
     for (const uid of sortedUsers) {
       const name = nameById[uid] ?? uid;
-      const userLogs = byUser.get(uid) ?? [];
+      const userLogs = sortedLogs.filter((l) => contributorIdsForLog(l).includes(uid));
       const hours = userLogs.reduce((s, l) => s + (l.hours != null && Number.isFinite(l.hours) ? l.hours : 0), 0);
-      lines.push(`• ${name} — ${userLogs.length} log${userLogs.length === 1 ? "" : "s"}` + (hours > 0 ? `, ~${hours.toFixed(1)}h logged` : ""));
-      const titles = userLogs.map((l) => `  – ${l.date} [${l.category}] ${l.title}`);
+      lines.push(`• ${name} — ${userLogs.length} log${userLogs.length === 1 ? "" : "s"} linked` + (hours > 0 ? `, ~${hours.toFixed(1)}h on those entries` : ""));
+      const titles = userLogs.map((l) => {
+        const filedBy = l.userId !== uid ? ` (filed by ${nameById[l.userId] ?? l.userId})` : "";
+        const others = l.participantUserIds.filter((id) => id !== l.userId);
+        const withClause =
+          others.length > 0
+            ? ` — with ${others.map((id) => nameById[id] ?? id).join(", ")}`
+            : "";
+        return `  – ${l.date} [${l.category}] ${l.title}${filedBy}${withClause}`;
+      });
       const max = 14;
       lines.push(...titles.slice(0, max));
       if (titles.length > max) {
@@ -123,18 +134,16 @@ export function buildWeeklyNarrativeReport(options: {
     lines.push("");
   }
 
-  if (attendance.length > 0) {
-    lines.push("LAB CHECK-INS");
-    const byAtt = new Map<string, Set<string>>();
-    for (const a of attendance) {
-      if (a.attendedDate < weekStart || a.attendedDate > weekEnd) continue;
-      if (!byAtt.has(a.userId)) byAtt.set(a.userId, new Set());
-      byAtt.get(a.userId)!.add(a.attendedDate);
-    }
-    const rows = [...byAtt.entries()].sort((a, b) => b[1].size - a[1].size);
-    for (const [uid, days] of rows) {
-      const name = nameById[uid] ?? uid;
-      lines.push(`• ${name} marked present on ${days.size} day${days.size === 1 ? "" : "s"} this week.`);
+  if (itemRequests.length > 0) {
+    lines.push("ITEM / PARTS REQUESTS (submitted this week)");
+    for (const r of itemRequests) {
+      const who = nameById[r.userId] ?? r.userId;
+      const purpose = ITEM_REQUEST_PURPOSE_LABEL[r.purpose];
+      const price = r.price.trim() ? r.price.trim() : "(no price)";
+      const link = r.link.trim() ? r.link.trim() : "(no link)";
+      lines.push(
+        `• ${r.name} × ${r.quantity} — ${purpose} — ${price} — requested by ${who} — ${link}`
+      );
     }
     lines.push("");
   }
