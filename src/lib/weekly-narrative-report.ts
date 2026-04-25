@@ -141,8 +141,11 @@ export function buildWeeklyNarrativeReport(options: {
       const purpose = ITEM_REQUEST_PURPOSE_LABEL[r.purpose];
       const price = r.price.trim() ? r.price.trim() : "(no price)";
       const link = r.link.trim() ? r.link.trim() : "(no link)";
+      const orderStatus = r.orderedAt
+        ? `ordered ${format(parseISO(r.orderedAt), "yyyy-MM-dd")}`
+        : "pending order";
       lines.push(
-        `• ${r.name} × ${r.quantity} — ${purpose} — ${price} — requested by ${who} — ${link}`
+        `• ${r.name} × ${r.quantity} — ${purpose} — ${price} — requested by ${who} — ${link} — ${orderStatus}`
       );
     }
     lines.push("");

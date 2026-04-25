@@ -50,6 +50,7 @@ export async function POST(request: Request) {
     link: parsed.data.link.trim(),
     purpose: parsed.data.purpose,
     createdAt: now,
+    orderedAt: null,
   };
 
   try {

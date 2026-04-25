@@ -2,6 +2,7 @@ import { format } from "date-fns";
 import { redirect } from "next/navigation";
 
 import { ItemRequestForm } from "@/components/ItemRequestForm";
+import { ItemRequestOrderedControl } from "@/components/ItemRequestOrderedControl";
 import { ITEM_REQUEST_PURPOSE_LABEL } from "@/lib/item-request-purpose";
 import { listDirectoryUsers, listRecentItemRequests } from "@/lib/db";
 import { getSession } from "@/lib/session";
@@ -57,6 +58,7 @@ export default async function ItemRequestsPage() {
                 <p className="mt-1 text-xs text-muted-foreground">
                   {format(new Date(r.createdAt), "yyyy-MM-dd HH:mm")} · {nameById[r.userId] ?? "Member"}
                 </p>
+                <ItemRequestOrderedControl id={r.id} orderedAt={r.orderedAt} />
               </li>
             ))}
           </ul>

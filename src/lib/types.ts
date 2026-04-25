@@ -37,6 +37,8 @@ export type ItemRequestEntry = {
   link: string;
   purpose: ItemRequestPurpose;
   createdAt: string;
+  /** When the request was marked as ordered; null = not yet ordered. */
+  orderedAt: string | null;
 };
 
 export type FeedItem = {

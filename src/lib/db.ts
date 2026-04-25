@@ -381,8 +381,10 @@ function mapItemRequest(row: {
   link: string;
   purpose: string;
   created_at: string;
+  ordered_at?: string | null;
 }): ItemRequestEntry {
   const purpose = isItemRequestPurpose(row.purpose) ? row.purpose : "other";
+  const oa = row.ordered_at;
   return {
     id: row.id,
     userId: row.user_id,
@@ -392,6 +394,7 @@ function mapItemRequest(row: {
     link: row.link ?? "",
     purpose,
     createdAt: row.created_at,
+    orderedAt: oa != null && String(oa).length > 0 ? String(oa) : null,
   };
 }
 
@@ -419,7 +422,20 @@ export async function insertItemRequest(entry: ItemRequestEntry) {
     link: entry.link,
     purpose: entry.purpose,
     created_at: entry.createdAt,
+    ordered_at: entry.orderedAt,
   });
+  if (error) throw new Error(error.message);
+}
+
+export async function getItemRequestById(id: string): Promise<ItemRequestEntry | undefined> {
+  const { data, error } = await admin().from("lablog_item_requests").select("*").eq("id", id).maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) return undefined;
+  return mapItemRequest(data as Parameters<typeof mapItemRequest>[0]);
+}
+
+export async function updateItemRequestOrderedAt(id: string, orderedAt: string | null) {
+  const { error } = await admin().from("lablog_item_requests").update({ ordered_at: orderedAt }).eq("id", id);
   if (error) throw new Error(error.message);
 }
 
