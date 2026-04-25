@@ -17,9 +17,10 @@ export default async function AdminRolesPage() {
       <div>
         <h1 className="text-2xl font-semibold text-foreground">Team roles</h1>
         <p className="mt-1 text-sm text-muted-foreground text-pretty">
-          Promote trusted teammates to <strong className="text-foreground">Board member</strong> so they can see
-          weekly summaries, item requests, activity feed, and the user directory API. Everyone else stays a{" "}
-          <strong className="text-foreground">Lab member</strong> with normal lab access.
+          <strong className="text-foreground">Board</strong> sees the same team dashboard and feed as admins, plus
+          the weekly summary page. <strong className="text-foreground">Treasurer</strong> gets that team visibility too
+          and is the role that marks item requests as ordered (admins can as well).{" "}
+          <strong className="text-foreground">Lab member</strong> is the default for everyone else.
         </p>
       </div>
       <AdminUserRolesTable users={users} currentUserId={session.sub} />

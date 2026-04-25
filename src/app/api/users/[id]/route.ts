@@ -1,18 +1,18 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getUserById, updateUserMemberBoardRole } from "@/lib/db";
+import { getUserById, updateUserAssignableRole } from "@/lib/db";
 import { isAdmin } from "@/lib/roles";
 import { getSession } from "@/lib/session";
 
 const patchSchema = z.object({
-  role: z.enum(["member", "board"]),
+  role: z.enum(["member", "board", "treasurer"]),
 });
 
 const ROLE_CHECK_DB_FIX =
-  "Your Supabase project still has an old check on lablog_users.role that does not allow 'board'. In Supabase → SQL Editor, run:\n\n" +
+  "Your Supabase project’s `lablog_users.role` check is out of date. In Supabase → SQL Editor, run the latest role migration from the repo (e.g. `012_lablog_users_role_treasurer.sql`), or:\n\n" +
   "alter table public.lablog_users drop constraint if exists lablog_users_role_check;\n" +
-  "alter table public.lablog_users add constraint lablog_users_role_check check (role in ('admin', 'board', 'member'));\n\n" +
-  "Then try again. If you have not applied board role SQL yet, run migration 007 or 008 from the repo in Supabase.";
+  "alter table public.lablog_users add constraint lablog_users_role_check check (role in ('admin', 'board', 'member', 'treasurer'));\n\n" +
+  "Then try again.";
 
 function isRoleCheckViolation(message: string): boolean {
   return /lablog_users_role_check|23514|role_check/i.test(message);
@@ -41,11 +41,11 @@ export async function PATCH(request: Request, context: RouteContext) {
   const json = await request.json().catch(() => null);
   const parsed = patchSchema.safeParse(json);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Body must be { \"role\": \"member\" | \"board\" }." }, { status: 400 });
+    return NextResponse.json({ error: "Body must be { \"role\": \"member\" | \"board\" | \"treasurer\" }." }, { status: 400 });
   }
 
   try {
-    await updateUserMemberBoardRole(targetId, parsed.data.role);
+    await updateUserAssignableRole(targetId, parsed.data.role);
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Update failed";
     if (msg === "NOT_FOUND") return NextResponse.json({ error: "User not found." }, { status: 404 });

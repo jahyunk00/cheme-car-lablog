@@ -11,7 +11,7 @@ const appLinks = [
   { href: "/calendar", label: "Calendar", description: "Meetings, deadlines, and lab milestones.", icon: Calendar },
   { href: "/logs", label: "Logs", description: "Team lab log and your entries.", icon: FileText },
   { href: "/item-requests", label: "Item requests", description: "Parts and supplies: quantity, price, link, and use.", icon: ShoppingCart },
-  { href: "/weekly-summary", label: "Weekly summary", description: "Roll-up of the week for meetings.", icon: BarChart2 },
+  { href: "/weekly-summary", label: "Weekly summary", description: "Roll-up of the week for board and admin meetings.", icon: BarChart2 },
 ] as const;
 
 export function ClubIntroHome({ isAuthed, userName }: { isAuthed: boolean; userName: string | null }) {

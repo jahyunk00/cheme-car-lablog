@@ -48,7 +48,7 @@ export async function verifySession(token: string): Promise<SessionPayload | nul
     const name = typeof payload.name === "string" ? payload.name : "";
     const r = payload.role;
     const role: UserRole =
-      r === "admin" || r === "board" || r === "member" ? r : "member";
+      r === "admin" || r === "board" || r === "member" || r === "treasurer" ? r : "member";
     const avatarId = parseLablogAvatarId(payload.avatarId);
     if (!sub || !email) return null;
     return { sub, email, name, role, avatarId };

@@ -2,7 +2,7 @@ import { format, startOfWeek, endOfWeek } from "date-fns";
 import Link from "next/link";
 import { UserAvatar } from "@/components/UserAvatar";
 import { listAllLogs, listDirectoryUsers, listFeed } from "@/lib/db";
-import { canViewTeamMetrics } from "@/lib/roles";
+import { canAccessWeeklySummary, canViewTeamMetrics } from "@/lib/roles";
 import { getSession } from "@/lib/session";
 
 export default async function DashboardPage() {
@@ -10,6 +10,7 @@ export default async function DashboardPage() {
   if (!session) return null;
 
   const showTeam = canViewTeamMetrics(session.role);
+  const showWeeklySummaryLink = canAccessWeeklySummary(session.role);
   const today = format(new Date(), "yyyy-MM-dd");
   const [logs, directory] = await Promise.all([listAllLogs(), listDirectoryUsers()]);
   const feed = showTeam ? await listFeed(12) : [];
@@ -32,7 +33,7 @@ export default async function DashboardPage() {
         <p className="text-slate-400 mt-1 text-sm">
           {showTeam
             ? "Today’s activity, a live feed, and a quick look at this week."
-            : "Your logs today and a quick look at your week. Team metrics are available to board members and admins."}
+            : "Your logs today and a quick look at your week. Team metrics are available to board, treasurer, and admin roles."}
         </p>
       </div>
 
@@ -51,10 +52,14 @@ export default async function DashboardPage() {
           <h2 className="text-sm font-medium text-slate-400 uppercase tracking-wide">This week</h2>
           <p className="mt-2 text-3xl font-semibold text-white">{weekLogs.length}</p>
           <p className="text-sm text-slate-500 mt-1">{showTeam ? "team logs" : "your logs"} (Mon–Sun)</p>
-          {showTeam ? (
+          {showWeeklySummaryLink ? (
             <Link href="/weekly-summary" className="mt-4 inline-block text-sm text-primary">
               Open weekly summary →
             </Link>
+          ) : showTeam ? (
+            <p className="mt-4 text-xs text-slate-500 leading-relaxed">
+              The weekly summary page is for board members and admins. You still see team counts here.
+            </p>
           ) : (
             <p className="mt-4 text-xs text-slate-500 leading-relaxed">
               Weekly team summary is visible to board members and admins.
@@ -116,7 +121,7 @@ export default async function DashboardPage() {
           <h2 className="text-lg font-medium text-white mb-3">Activity feed</h2>
           {!showTeam ? (
             <p className="text-slate-500 text-sm leading-relaxed">
-              The live team feed is available to board members and admins. You can still browse all shared logs under{" "}
+              The live team feed is available to board, treasurer, and admin roles. You can still browse all shared logs under{" "}
               <Link href="/logs" className="text-primary hover:underline">
                 Logs
               </Link>

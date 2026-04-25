@@ -5,6 +5,7 @@ import { ItemRequestForm } from "@/components/ItemRequestForm";
 import { ItemRequestOrderedControl } from "@/components/ItemRequestOrderedControl";
 import { ITEM_REQUEST_PURPOSE_LABEL } from "@/lib/item-request-purpose";
 import { listDirectoryUsers, listRecentItemRequests } from "@/lib/db";
+import { canManageItemRequestOrders } from "@/lib/roles";
 import { getSession } from "@/lib/session";
 
 export default async function ItemRequestsPage() {
@@ -13,6 +14,7 @@ export default async function ItemRequestsPage() {
 
   const [requests, directory] = await Promise.all([listRecentItemRequests(100), listDirectoryUsers()]);
   const nameById = Object.fromEntries(directory.map((u) => [u.id, u.name]));
+  const canManageOrders = canManageItemRequestOrders(session.role);
 
   return (
     <div className="mx-auto min-w-0 max-w-3xl space-y-8">
@@ -20,7 +22,8 @@ export default async function ItemRequestsPage() {
         <h1 className="text-2xl font-semibold text-foreground">Item requests</h1>
         <p className="mt-1 text-sm text-muted-foreground text-pretty max-w-prose">
           Request parts or supplies: name, quantity, price, where to buy, and what it is for. Recent requests appear
-          here; admins see the same window in the weekly narrative report.
+          here; treasurer or admin can mark a line as ordered once it is purchased. Admins see the same list in the
+          weekly narrative report.
         </p>
       </div>
 
@@ -58,7 +61,7 @@ export default async function ItemRequestsPage() {
                 <p className="mt-1 text-xs text-muted-foreground">
                   {format(new Date(r.createdAt), "yyyy-MM-dd HH:mm")} · {nameById[r.userId] ?? "Member"}
                 </p>
-                <ItemRequestOrderedControl id={r.id} orderedAt={r.orderedAt} />
+                <ItemRequestOrderedControl id={r.id} orderedAt={r.orderedAt} canManageOrders={canManageOrders} />
               </li>
             ))}
           </ul>

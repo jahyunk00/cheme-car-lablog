@@ -2,7 +2,7 @@ import { addWeeks, endOfWeek, format, startOfWeek, subWeeks } from "date-fns";
 import { redirect } from "next/navigation";
 import { UserAvatar } from "@/components/UserAvatar";
 import { listAllLogs, listDirectoryUsers } from "@/lib/db";
-import { canViewTeamMetrics } from "@/lib/roles";
+import { canAccessWeeklySummary } from "@/lib/roles";
 import { getSession } from "@/lib/session";
 
 type Props = { searchParams: Promise<{ date?: string }> };
@@ -10,7 +10,7 @@ type Props = { searchParams: Promise<{ date?: string }> };
 export default async function WeeklySummaryPage({ searchParams }: Props) {
   const session = await getSession();
   if (!session) return null;
-  if (!canViewTeamMetrics(session.role)) redirect("/dashboard");
+  if (!canAccessWeeklySummary(session.role)) redirect("/dashboard");
 
   const sp = await searchParams;
   const anchor =

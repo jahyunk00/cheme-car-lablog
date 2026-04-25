@@ -9,9 +9,11 @@ import { Button } from "@/components/ui/button";
 type Props = {
   id: string;
   orderedAt: string | null;
+  /** When false, status is read-only (treasurer/admin only may change). */
+  canManageOrders: boolean;
 };
 
-export function ItemRequestOrderedControl({ id, orderedAt }: Props) {
+export function ItemRequestOrderedControl({ id, orderedAt, canManageOrders }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,17 +49,21 @@ export function ItemRequestOrderedControl({ id, orderedAt }: Props) {
       ) : (
         <span className="text-xs text-muted-foreground">Not ordered yet</span>
       )}
-      <div className="flex items-center gap-1">
-        {orderedAt ? (
-          <Button type="button" variant="outline" size="sm" className="h-7 text-xs" disabled={loading} onClick={() => setOrdered(false)}>
-            Clear ordered
-          </Button>
-        ) : (
-          <Button type="button" size="sm" className="h-7 text-xs" disabled={loading} onClick={() => setOrdered(true)}>
-            Mark as ordered
-          </Button>
-        )}
-      </div>
+      {canManageOrders ? (
+        <div className="flex items-center gap-1">
+          {orderedAt ? (
+            <Button type="button" variant="outline" size="sm" className="h-7 text-xs" disabled={loading} onClick={() => setOrdered(false)}>
+              Clear ordered
+            </Button>
+          ) : (
+            <Button type="button" size="sm" className="h-7 text-xs" disabled={loading} onClick={() => setOrdered(true)}>
+              Mark as ordered
+            </Button>
+          )}
+        </div>
+      ) : (
+        <p className="w-full text-xs text-muted-foreground">Order status is updated by treasurer or admin.</p>
+      )}
       {error && <p className="w-full text-xs text-destructive">{error}</p>}
     </div>
   );

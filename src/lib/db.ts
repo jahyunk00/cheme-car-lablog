@@ -45,7 +45,7 @@ function isMissingLablogCategoryColumnError(err: unknown): boolean {
 }
 
 function parseUserRole(value: string): UserRole {
-  if (value === "admin" || value === "board" || value === "member") return value;
+  if (value === "admin" || value === "board" || value === "member" || value === "treasurer") return value;
   return "member";
 }
 
@@ -203,8 +203,10 @@ export async function listDirectoryUsers(): Promise<
   }));
 }
 
-/** Set a user to member or board. Admins cannot be changed here (use database for admin accounts). */
-export async function updateUserMemberBoardRole(userId: string, role: "member" | "board") {
+export type AssignableNonAdminRole = "member" | "board" | "treasurer";
+
+/** Set role to member, board, or treasurer. Admins cannot be changed here (use database for admin accounts). */
+export async function updateUserAssignableRole(userId: string, role: AssignableNonAdminRole) {
   const existing = await getUserById(userId);
   if (!existing) throw new Error("NOT_FOUND");
   if (existing.role === "admin") throw new Error("ADMIN_ROLE_LOCKED");

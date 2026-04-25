@@ -25,7 +25,7 @@ export function AdminUserRolesTable({
   const [error, setError] = useState<string | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
 
-  async function setRole(userId: string, role: "member" | "board") {
+  async function setRole(userId: string, role: "member" | "board" | "treasurer") {
     setError(null);
     setPendingId(userId);
     try {
@@ -94,18 +94,19 @@ export function AdminUserRolesTable({
                     ) : (
                       <select
                         className="w-full max-w-[11rem] rounded-md border border-border bg-background px-2 py-1.5 text-foreground"
-                        value={u.role === "board" ? "board" : "member"}
+                        value={u.role}
                         disabled={pendingId === u.id}
                         aria-label={`Role for ${u.name}`}
                         onChange={(e) => {
                           const v = e.target.value;
-                          if (v !== "member" && v !== "board") return;
+                          if (v !== "member" && v !== "board" && v !== "treasurer") return;
                           if (v === u.role) return;
                           void setRole(u.id, v);
                         }}
                       >
                         <option value="member">Lab member</option>
                         <option value="board">Board member</option>
+                        <option value="treasurer">Treasurer</option>
                       </select>
                     )}
                   </td>
@@ -116,8 +117,9 @@ export function AdminUserRolesTable({
         </table>
       </div>
       <p className="text-xs text-muted-foreground leading-relaxed">
-        New accounts start as lab members. After you set someone to board, they should log out and back in to pick up
-        metrics and item-request visibility. Admin accounts cannot be edited here.
+        New accounts start as lab members. After you change someone’s role, they should log out and back in to pick
+        up permissions (board and treasurer see team metrics; only treasurer and admin can mark item requests ordered).
+        Admin accounts cannot be edited here.
       </p>
     </div>
   );

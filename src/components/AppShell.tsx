@@ -4,12 +4,13 @@ import Link from "next/link";
 import { AppNav, type AppNavLink } from "@/components/AppNav";
 import { clubBrandLogo } from "@/lib/club-intro";
 import { UserAvatar } from "@/components/UserAvatar";
-import { canViewTeamMetrics, isAdmin } from "@/lib/roles";
+import { canAccessWeeklySummary, isAdmin } from "@/lib/roles";
 import type { UserRole } from "@/lib/types";
 
 function roleLabel(role: UserRole) {
   if (role === "admin") return "Admin";
   if (role === "board") return "Board";
+  if (role === "treasurer") return "Treasurer";
   return "Member";
 }
 
@@ -20,7 +21,7 @@ function buildNavLinks(role: UserRole): AppNavLink[] {
     { href: "/logs", label: "Logs" },
     { href: "/item-requests", label: "Item requests" },
   ];
-  if (canViewTeamMetrics(role)) {
+  if (canAccessWeeklySummary(role)) {
     core.push({ href: "/weekly-summary", label: "Weekly summary" });
   }
   if (isAdmin(role)) {

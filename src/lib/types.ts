@@ -2,7 +2,7 @@ import type { LablogAvatarId } from "@/lib/avatar-ids";
 import type { ItemRequestPurpose } from "./item-request-purpose";
 import type { LogCategory } from "@/lib/log-categories";
 
-export type UserRole = "admin" | "board" | "member";
+export type UserRole = "admin" | "board" | "member" | "treasurer";
 
 export type User = {
   id: string;
