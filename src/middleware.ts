@@ -7,6 +7,8 @@ function isPublicPath(pathname: string) {
   if (pathname === "/" || pathname === "/login" || pathname === "/register") return true;
   if (pathname.startsWith("/login/") || pathname.startsWith("/register/")) return true;
   if (pathname === "/api/auth/login" || pathname === "/api/auth/register") return true;
+  // Files under `public/` (e.g. club logo); must not redirect to login or the <Image> src breaks.
+  if (pathname.startsWith("/brand/")) return true;
   return false;
 }
 
